@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API</title>
+</head>
+<body>
+    <h1>Enter your Swagger URL</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="swagger_url" placeholder="Swagger URL">
+        <button type="submit">Generate Tests</button>
+    </form>
+
+    {% if test_cases %}
+        <h2>Generated Test Cases</h2>
+        <ul>
+            {% for test_case in test_cases %}
+                <li>
+                    <p>URL: {{ test_case.url }}</p>
+                    <p>Method: {{ test_case.method }}</p>
+                    <p>Body: {{ test_case.body }}</p>
+                    <p>Parameters: {{ test_case.parameters }}</p>
+                    <a href="{% url 'execute_test_case' test_case.id %}"><button>Execute Test</button></a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if test_execution %}
+        <h2>Test Execution Created</h2>
+        <p>Test Execution ID: {{ test_execution.id }}</p>
+        <a href="{% url 'execute_tests' test_execution.id %}"><button>Execute Tests</button></a>
+    {% endif %}
+
+    {% if report %}
+        <h2>Test Report</h2>
+        <pre>{{ report }}</pre>
+    {% endif %}
+</body>
+</html>
