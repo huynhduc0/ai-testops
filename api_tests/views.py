@@ -6,6 +6,7 @@ from .models import TestExecution, TestCase
 from .generators.gemini import GeminiLLM
 from .generators.llm_offline import OfflineLLM
 import json
+import subprocess
 
 def parse_and_test(request):
     if request.method == 'POST':
@@ -95,3 +96,6 @@ def execute_tests(request, execution_id):
 
 def test_api_view(request):
     return render(request, 'api_tests/test_form.html')
+
+# Start the file change listener when the Django application starts
+subprocess.Popen(['python', 'manage.py', 'watch'])

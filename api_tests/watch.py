@@ -2,6 +2,7 @@ import logging
 import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from django.core.management.base import BaseCommand
 from api_tests.test_generator import run_test_case, save_test_result_to_db
 
 class TestFileChangeHandler(FileSystemEventHandler):
@@ -24,5 +25,8 @@ def listen_for_file_changes():
         observer.stop()
     observer.join()
 
-if __name__ == "__main__":
-    listen_for_file_changes()
+class Command(BaseCommand):
+    help = 'Start the file change listener'
+
+    def handle(self, *args, **kwargs):
+        listen_for_file_changes()
