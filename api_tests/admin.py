@@ -1,6 +1,6 @@
 # api_tests/admin.py
 from django.contrib import admin
-from .models import TestExecution, TestCase
+from .models import TestExecution, TestCase, TestResult
 
 @admin.register(TestExecution)
 class TestExecutionAdmin(admin.ModelAdmin):
@@ -13,3 +13,9 @@ class TestCaseAdmin(admin.ModelAdmin):
     list_display = ('test_execution', 'url', 'method', 'result', 'created_at', 'updated_at')
     search_fields = ('test_execution__execute_info', 'url', 'method', 'result')
     list_filter = ('created_at', 'updated_at')
+
+@admin.register(TestResult)
+class TestResultAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in TestResult._meta.fields]
+    search_fields = ('owner__username', 'status', 'log')
+    list_filter = ('created_at',)

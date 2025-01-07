@@ -23,7 +23,16 @@ class TestCase(models.Model):
     error_details = models.TextField(null=True, blank=True)
     request_response = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"TestCase for {self.test_execution} at {self.created_at}"
+
+class TestResult(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    status = models.CharField(max_length=50)
+    log = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"TestResult {self.id} - {self.status}"

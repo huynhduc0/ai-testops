@@ -4,6 +4,7 @@ import os
 import logging
 import pytest
 from confluent_kafka import Producer
+import json
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -118,23 +119,24 @@ def generate_test_cases(llm, swagger_data):
     return test_cases
 
 def create_test_case_file(test_case_content, test_case_id):
-    file_path = f"/workspaces/ai-testops/api_tests/test_cases/test_case_{test_case_id}.py"
+    file_path = f"/test_cases/test_case_{test_case_id}.py"
     with open(file_path, 'w') as file:
         file.write(test_case_content)
     logging.debug(f"Test case file created at {file_path}")
 
     producer = Producer({'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS})
-    producer.produce('test_run_queue', file_path.encode('utf-8'))
+    message = json.dumps({'test_id': test_case_id, 'script': test_case_content})
+    producer.produce('test_run_queue', message.encode('utf-8'))
     producer.flush()
 
     return file_path
 
-def run_test_case(file_path):
-    # Only create the pytest file and send the file path to Kafka
+def run_test_case(test_case_id, test_case_content):
     producer = Producer({'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS})
-    producer.produce('test_run_queue', file_path.encode('utf-8'))
+    message = json.dumps({'test_id': test_case_id, 'script': test_case_content})
+    producer.produce('test_run_queue', message.encode('utf-8'))
     producer.flush()
-    logging.debug(f"Sent file path {file_path} to Kafka")
+    logging.debug(f"Sent test case ID {test_case_id} to Kafka")
 
 def save_test_result_to_db(test_case_id, status, log_output):
     # Implement database save logic here

@@ -10,6 +10,27 @@
     <h1 style="text-align: center;"> My google OAuth Project </h1>
     {% if user.is_authenticated %}
     <p>Welcome. You are logged in as {{user.username}} </p>
+    <button onclick="fetchTestResult(1)">View Test Result</button>
+    <div id="testResultModal" style="display:none;">
+        <div>
+            <span onclick="closeModal()">Close</span>
+            <pre id="testResultContent"></pre>
+        </div>
+    </div>
+    <script>
+        function fetchTestResult(testResultId) {
+            fetch(`/api/test_results/${testResultId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('testResultContent').innerText = data.log;
+                    document.getElementById('testResultModal').style.display = 'block';
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('testResultModal').style.display = 'none';
+        }
+    </script>
     {% else %}
     <a href="{% provider_login_url 'google' %}">Login with Google</a>
     {% endif %}

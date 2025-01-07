@@ -2,11 +2,13 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from .extraction import parse_swagger_from_url, get_base_url
 from .test_generator import run_test_case, generate_report, generate_test_case
-from .models import TestExecution, TestCase
+from .models import TestExecution, TestCase, TestResult
 from .generators.gemini import GeminiLLM
 from .generators.llm_offline import OfflineLLM
 import json
-import subprocess
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
 
 def parse_and_test(request):
     if request.method == 'POST':
@@ -57,7 +59,7 @@ def generate_test_case_content(request, test_case_id):
 def execute_test_case(request, test_case_id):
     try:
         test_case = TestCase.objects.get(id=test_case_id)
-        result = run_test_case(test_case.content)
+        result = run_test_case(test_case_id, test_case.content)
         report = generate_report([result])
         
         test_case.result = result['status']
@@ -97,5 +99,24 @@ def execute_tests(request, execution_id):
 def test_api_view(request):
     return render(request, 'api_tests/test_form.html')
 
+@csrf_exempt
+def save_test_result(request, test_case_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            test_result, created = TestResult.objects.get_or_create(
+                id=test_case_id,
+                defaults={'owner': request.user if request.user.is_authenticated else None}
+            )
+            if not test_result.owner:
+                test_result.owner = request.user if request.user.is_authenticated else None
+            test_result.status = data.get('status')
+            test_result.log = data.get('log')
+            test_result.save()
+            return JsonResponse({'message': 'Test result saved successfully'}, status=200)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 # Start the file change listener when the Django application starts
-subprocess.Popen(['python', 'watch.py', 'watch'])
+# subprocess.Popen(['python', 'watch.py', 'watch'])
