@@ -3,8 +3,11 @@ import tempfile
 import os
 import logging
 import pytest
+from confluent_kafka import Producer
 
 logging.basicConfig(level=logging.DEBUG)
+
+KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 
 def generate_test_case(llm, test_case, additional_prompt=''):
     base_url = test_case.test_execution.execute_info.split(' ')[-1]
@@ -119,26 +122,19 @@ def create_test_case_file(test_case_content, test_case_id):
     with open(file_path, 'w') as file:
         file.write(test_case_content)
     logging.debug(f"Test case file created at {file_path}")
+
+    producer = Producer({'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS})
+    producer.produce('test_run_queue', file_path.encode('utf-8'))
+    producer.flush()
+
     return file_path
 
 def run_test_case(file_path):
-    log_file_path = f"{file_path}.log"
-    try:
-        result = pytest.main([file_path, '--log-file', log_file_path, '--log-cli-level=DEBUG'])
-        if result == 0:
-            status = "Passed"
-        else:
-            status = "Failed"
-        with open(log_file_path, 'r') as file:
-            log_output = file.read()
-    except Exception as e:
-        status = f"Failed: {e}"
-        log_output = str(e)
-        logging.error(log_output)
-    return {
-        'status': status,
-        'log': log_output
-    }
+    # Only create the pytest file and send the file path to Kafka
+    producer = Producer({'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS})
+    producer.produce('test_run_queue', file_path.encode('utf-8'))
+    producer.flush()
+    logging.debug(f"Sent file path {file_path} to Kafka")
 
 def save_test_result_to_db(test_case_id, status, log_output):
     # Implement database save logic here

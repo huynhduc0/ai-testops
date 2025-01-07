@@ -98,4 +98,4 @@ def test_api_view(request):
     return render(request, 'api_tests/test_form.html')
 
 # Start the file change listener when the Django application starts
-subprocess.Popen(['python', 'manage.py', 'watch'])
+subprocess.Popen(['python', 'watch.py', 'watch'])

@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: ai_testops
+      POSTGRES_USER: ai_testops_user
+      POSTGRES_PASSWORD: ai_testops_password
+    ports:
+      - "5432:5432"
+
+  # web:
+  #   build: .
+  #   command: python manage.py runserver 0.0.0.0:8000
+  #   volumes:
+  #     - .:/code
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - db
+  #     - kafka
+  #   environment:
+  #     - DB_NAME=ai_testops
+  #     - DB_USER=ai_testops_user
+  #     - DB_PASSWORD=ai_testops_password
+  #     - DB_HOST=db
+  #     - DB_PORT=5432
+  #     - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
