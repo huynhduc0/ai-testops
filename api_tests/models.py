@@ -22,6 +22,7 @@ class TestCase(models.Model):
     result = models.CharField(max_length=255, null=True, blank=True)
     error_details = models.TextField(null=True, blank=True)
     request_response = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=50, default='new')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -29,6 +30,7 @@ class TestCase(models.Model):
         return f"TestCase for {self.test_execution} at {self.created_at}"
 
 class TestResult(models.Model):
+    test_case = models.ForeignKey(TestCase, on_delete=models.CASCADE, related_name='test_results')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(max_length=50)
     log = models.TextField()

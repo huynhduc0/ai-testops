@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from .extraction import parse_swagger_from_url, get_base_url
-from .test_generator import run_test_case, generate_report, generate_test_case
+from .test_generator import request_run_test_case, generate_report, generate_test_case
 from .models import TestExecution, TestCase, TestResult
 from .generators.gemini import GeminiLLM
 from .generators.llm_offline import OfflineLLM
@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 
+# Page Views
 def parse_and_test(request):
     if request.method == 'POST':
         try:
@@ -46,6 +47,22 @@ def parse_and_test(request):
     
     return render(request, 'api_tests/test_form.html')
 
+def test_api_view(request):
+    return render(request, 'api_tests/test_form.html')
+
+def list_test_executions(request):
+    test_executions = TestExecution.objects.all()
+    return render(request, 'api_tests/list_test_executions.html', {'test_executions': test_executions})
+
+def test_execution_detail(request, execution_id):
+    test_execution = TestExecution.objects.get(id=execution_id)
+    return render(request, 'api_tests/test_execution_detail.html', {'test_execution': test_execution})
+
+def test_result_detail(request, test_result_id):
+    test_result = TestResult.objects.get(id=test_result_id)
+    return render(request, 'api_tests/test_result_detail.html', {'test_result': test_result})
+
+# API Views
 def generate_test_case_content(request, test_case_id):
     try:
         llm = GeminiLLM("AIzaSyDey1NPVwZjxaj0F4k286NT4ra0hZNRFRo")
@@ -59,15 +76,12 @@ def generate_test_case_content(request, test_case_id):
 def execute_test_case(request, test_case_id):
     try:
         test_case = TestCase.objects.get(id=test_case_id)
-        result = run_test_case(test_case_id, test_case.content)
-        report = generate_report([result])
-        
-        test_case.result = result['status']
-        test_case.error_details = result['status'] if "Failed" in result['status'] else None
-        test_case.request_response = result['summary']  # Capture request/response details
+        test_case.status = 'requested'
         test_case.save()
         
-        return JsonResponse({'report': report, 'error_details': test_case.error_details, 'request_response': test_case.request_response, 'summary': result['summary'], 'log': result['log']})
+        request_run_test_case(test_case_id, test_case.content)
+        
+        return JsonResponse({'error_details': test_case.error_details, 'request_response': test_case.request_response})
     except Exception as e:
         print(e)
         return JsonResponse({'error': str(e)}, status=400)
@@ -76,7 +90,7 @@ def execute_tests(request, execution_id):
     try:
         test_execution = TestExecution.objects.get(id=execution_id)
         test_cases = test_execution.test_cases.all()
-        results = [run_test_case(tc.content) for tc in test_cases]
+        results = [request_run_test_case(tc.content) for tc in test_cases]
         report = generate_report(results)
         
         test_execution.report_pass_fail = all(r['status'] == "Passed" for r in results)
@@ -96,27 +110,60 @@ def execute_tests(request, execution_id):
     except Exception as e:
         return HttpResponse(str(e), status=400, content_type="text/plain")
 
-def test_api_view(request):
-    return render(request, 'api_tests/test_form.html')
-
 @csrf_exempt
 def save_test_result(request, test_case_id):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            test_result, created = TestResult.objects.get_or_create(
-                id=test_case_id,
-                defaults={'owner': request.user if request.user.is_authenticated else None}
+            print(data)
+            test_case = TestCase.objects.get(id=test_case_id)
+            test_result = TestResult.objects.create(
+                test_case=test_case,
+                status=data.get('status', 'failed'),
+                log=data.get('log', '')
             )
-            if not test_result.owner:
-                test_result.owner = request.user if request.user.is_authenticated else None
-            test_result.status = data.get('status')
-            test_result.log = data.get('log')
             test_result.save()
-            return JsonResponse({'message': 'Test result saved successfully'}, status=200)
+            return JsonResponse({'message': 'Test case content saved successfully'}, status=200)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-# Start the file change listener when the Django application starts
-# subprocess.Popen(['python', 'watch.py', 'watch'])
+@csrf_exempt
+def save_test_case_content(request, test_case_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            test_case = TestCase.objects.get(id=test_case_id)
+            test_case.content = data.get('content', test_case.content)
+            test_case.save()
+            return JsonResponse({'message': 'Test case content saved successfully'}, status=200)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def test_case_detail_api(request, test_case_id):
+    try:
+        test_case = TestCase.objects.get(id=test_case_id)
+        test_result = TestResult.objects.filter(test_case=test_case).last()
+        return JsonResponse({'test_case': {
+            'id': test_case.id,
+            'url': test_case.url,
+            'method': test_case.method,
+            'body': test_case.body,
+            'parameters': test_case.parameters,
+            'content': test_case.content,
+            'result': test_case.result,
+            'error_details': test_case.error_details,
+            'request_response': test_case.request_response,
+            'status': test_case.status,
+            'created_at': test_case.created_at,
+            'updated_at': test_case.updated_at,
+            'test_result': {
+                'id': test_result.id,
+                'status': test_result.status,
+                'log': test_result.log,
+                'created_at': test_result.created_at
+            } if test_result else None
+        }})
+    except TestCase.DoesNotExist:
+        return JsonResponse({'error': 'Test case not found'}, status=404)

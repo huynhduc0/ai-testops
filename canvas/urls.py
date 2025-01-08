@@ -36,6 +36,6 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('', TemplateView.as_view(template_name='index.html')),
     path('accounts/', include('allauth.urls')),
-    path('logout', LogoutView.as_view()),
+    path('logout/', LogoutView.as_view(), name='account_logout'),
     path('api_test/', include('api_tests.urls')),
 ]

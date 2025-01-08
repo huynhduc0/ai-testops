@@ -131,7 +131,7 @@ def create_test_case_file(test_case_content, test_case_id):
 
     return file_path
 
-def run_test_case(test_case_id, test_case_content):
+def request_run_test_case(test_case_id, test_case_content):
     producer = Producer({'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS})
     message = json.dumps({'test_id': test_case_id, 'script': test_case_content})
     producer.produce('test_run_queue', message.encode('utf-8'))

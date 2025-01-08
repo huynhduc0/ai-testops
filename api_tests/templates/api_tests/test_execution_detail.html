@@ -1,0 +1,76 @@
+{% extends 'api_tests/base.html' %}
+{% load static %}
+
+{% block title %}Test Execution Detail{% endblock %}
+
+{% block content %}
+<h1 class="mt-5">Test Execution Detail</h1>
+<div class="card mt-3 rounded shadow-sm p-3">
+    <div class="card-header">
+        <i class="fas fa-info-circle"></i> Execution ID: {{ test_execution.id }}
+    </div>
+    <div class="card-body">
+        <h5 class="card-title"><i class="fas fa-user"></i> User: {{ test_execution.user.username }}</h5>
+        <p class="card-text"><i class="fas fa-info"></i> Info: {{ test_execution.execute_info }}</p>
+        <p class="card-text"><i class="fas fa-check-circle"></i> Pass/Fail: {{ test_execution.report_pass_fail }}</p>
+        <p class="card-text"><i class="fas fa-file-alt"></i> Log: {{ test_execution.log }}</p>
+        <p class="card-text"><i class="fas fa-calendar-alt"></i> Created At: {{ test_execution.created_at }}</p>
+        <p class="card-text"><i class="fas fa-calendar-alt"></i> Updated At: {{ test_execution.updated_at }}</p>
+        <a href="{% url 'execute_tests' test_execution.id %}" class="btn btn-success btn-sm"><i class="fas fa-play"></i> Execute All Tests</a>
+    </div>
+</div>
+<h2 class="mt-5">Test Cases</h2>
+<ul class="list-group mt-3">
+    {% for test_case in test_execution.test_cases.all %}
+    <li class="list-group-item border rounded shadow-sm p-3 {% if not test_case.test_results.exists %}border-light{% elif test_case.test_results.last.status == 'passed' %}border-success{% elif test_case.test_results.last.status == 'failed' %}border-danger{% endif %}">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <p><strong>URL:</strong> {{ test_case.url }}</p>
+                <p><strong>Method:</strong> {{ test_case.method }}</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#test-case-{{ test_case.id }}" aria-expanded="false" aria-controls="test-case-{{ test_case.id }}">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div class="collapse" id="test-case-{{ test_case.id }}">
+            <p><strong>Body:</strong> {{ test_case.body }}</p>
+            <p><strong>Parameters:</strong> {{ test_case.parameters }}</p>
+            <textarea class="form-control mb-2 code-editor" id="content-{{ test_case.id }}" style="height: 150px;">{{ test_case.content }}</textarea>
+            <input type="text" class="form-control mb-2" id="additional-prompt-{{ test_case.id }}" placeholder="Additional prompt">
+            <button class="btn btn-primary btn-sm" onclick="generateTestCaseContent({{ test_case.id }})"><i class="fas fa-magic"></i> Generate Test Case</button>
+            <button class="btn btn-success btn-sm" id="execute-button-{{ test_case.id }}" onclick="executeTestCase({{ test_case.id }})"><i class="fas fa-play"></i> Execute Test</button>
+            <button class="btn btn-info btn-sm" onclick="viewTestResult({{ test_case.id }})"><i class="fas fa-eye"></i> View Result</button>
+            <div id="test-result-{{ test_case.id }}"></div>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+<!-- Modal -->
+<div class="modal fade" id="testResultModal" tabindex="-1" aria-labelledby="testResultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="testResultModalLabel">Test Result</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="testResultModalBody">
+                <!-- Test result content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/test_execution_detail.css' %}">
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/test_execution_detail.js' %}"></script>
+{% endblock %}

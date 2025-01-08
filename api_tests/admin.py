@@ -17,5 +17,5 @@ class TestCaseAdmin(admin.ModelAdmin):
 @admin.register(TestResult)
 class TestResultAdmin(admin.ModelAdmin):
     list_display = [field.name for field in TestResult._meta.fields]
-    search_fields = ('owner__username', 'status', 'log')
+    search_fields = ('owner__username', 'status')
     list_filter = ('created_at',)
