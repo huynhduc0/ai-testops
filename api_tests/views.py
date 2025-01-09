@@ -1,14 +1,16 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
+from django.urls import reverse
 from .extraction import parse_swagger_from_url, get_base_url
 from .test_generator import request_run_test_case, generate_report, generate_test_case
-from .models import TestExecution, TestCase, TestResult
+from .models import TestExecution, TestCase, TestResult, BaseUrl
 from .generators.gemini import GeminiLLM
 from .generators.llm_offline import OfflineLLM
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.core.serializers.json import DjangoJSONEncoder
 
 # Page Views
 def parse_and_test(request):
@@ -17,6 +19,7 @@ def parse_and_test(request):
             swagger_url = request.POST.get('swagger_url')
             swagger_data = parse_swagger_from_url(swagger_url)
             base_url = get_base_url(swagger_data)
+            print(base_url)
             test_execution, created = TestExecution.objects.get_or_create(
                 user=request.user,
                 execute_info=f"Tested Swagger from {swagger_url} with base URL {base_url}",
@@ -54,9 +57,22 @@ def list_test_executions(request):
     test_executions = TestExecution.objects.all()
     return render(request, 'api_tests/list_test_executions.html', {'test_executions': test_executions})
 
-def test_execution_detail(request, execution_id):
-    test_execution = TestExecution.objects.get(id=execution_id)
-    return render(request, 'api_tests/test_execution_detail.html', {'test_execution': test_execution})
+def test_execution_detail(request, pk):
+    test_execution = TestExecution.objects.get(pk=pk)
+    passed_count = test_execution.test_cases.filter(test_results__status='passed').count()
+    failed_count = test_execution.test_cases.filter(test_results__status='failed').count()
+    pending_count = test_execution.test_cases.filter(test_results__status='pending').count()
+    unprocessed_count = test_execution.test_cases.filter(test_results__isnull=True).count()
+    test_cases = list(test_execution.test_cases.values('id', 'url', 'method', 'body', 'parameters', 'content'))
+    return render(request, 'api_tests/test_execution_detail.html', {
+        'test_execution': test_execution,
+        'base_url': test_execution.base_url,
+        'passed_count': passed_count,
+        'failed_count': failed_count,
+        'pending_count': pending_count,
+        'unprocessed_count': unprocessed_count,
+        'test_cases': json.dumps(test_cases, cls=DjangoJSONEncoder)
+    })
 
 def test_result_detail(request, test_result_id):
     test_result = TestResult.objects.get(id=test_result_id)
@@ -68,7 +84,8 @@ def generate_test_case_content(request, test_case_id):
         llm = GeminiLLM("AIzaSyDey1NPVwZjxaj0F4k286NT4ra0hZNRFRo")
         test_case = TestCase.objects.get(id=test_case_id)
         additional_prompt = request.GET.get('additional_prompt', '')
-        test_case = generate_test_case(llm, test_case, additional_prompt)
+        base_url = test_case.test_execution.base_url
+        test_case = generate_test_case(llm, test_case, base_url, additional_prompt)
         return JsonResponse({'content': test_case.content})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
@@ -90,22 +107,38 @@ def execute_tests(request, execution_id):
     try:
         test_execution = TestExecution.objects.get(id=execution_id)
         test_cases = test_execution.test_cases.all()
-        results = [request_run_test_case(tc.content) for tc in test_cases]
+        results = []
+        llm = GeminiLLM("AIzaSyDey1NPVwZjxaj0F4k286NT4ra0hZNRFRo")
+
+        for test_case in test_cases:
+            try:
+                # Generate test case content
+                base_url = test_execution.base_url
+                test_case = generate_test_case(llm, test_case, base_url)
+                
+                # Trigger test case execution
+                request_run_test_case(test_case.id, test_case.content)
+                test_case.status = 'executed'
+                test_case.save()
+                results.append({
+                    'test_case': test_case.id,
+                    'status': 'executed',
+                    'summary': 'Test executed successfully',
+                    'log': ''
+                })
+            except Exception as e:
+                results.append({
+                    'test_case': test_case.id,
+                    'status': 'failed',
+                    'summary': str(e),
+                    'log': ''
+                })
+
         report = generate_report(results)
-        
-        test_execution.report_pass_fail = all(r['status'] == "Passed" for r in results)
+        test_execution.report_pass_fail = all(r['status'] == 'executed' for r in results)
         test_execution.log = report
         test_execution.save()
-        
-        for test_case, result in zip(test_cases, results):
-            error_details = result['status'] if "Failed" in result['status'] else None
-            request_response = result['summary']  # Capture request/response details
-            
-            test_case.result = result['status']
-            test_case.error_details = error_details
-            test_case.request_response = request_response
-            test_case.save()
-        
+
         return HttpResponse(report, content_type="text/plain")
     except Exception as e:
         return HttpResponse(str(e), status=400, content_type="text/plain")
@@ -167,3 +200,16 @@ def test_case_detail_api(request, test_case_id):
         }})
     except TestCase.DoesNotExist:
         return JsonResponse({'error': 'Test case not found'}, status=404)
+
+def update_base_url(request):
+    if request.method == 'POST':
+        new_base_url = request.POST.get('base_url')
+        test_execution_id = request.POST.get('test_execution_id')
+        try:
+            test_execution = TestExecution.objects.get(id=test_execution_id)
+            test_execution.base_url = new_base_url
+            test_execution.save()
+            return JsonResponse({'success': True})
+        except TestExecution.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'TestExecution not found'})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

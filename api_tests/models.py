@@ -8,6 +8,7 @@ class TestExecution(models.Model):
     log = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    base_url = models.CharField(max_length=255, null=True, blank=True)  # Add this line
 
     def __str__(self):
         return f"TestExecution by {self.user.username} at {self.created_at}"
@@ -38,3 +39,11 @@ class TestResult(models.Model):
 
     def __str__(self):
         return f"TestResult {self.id} - {self.status}"
+
+class BaseUrl(models.Model):
+    url = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"BaseUrl {self.url}"

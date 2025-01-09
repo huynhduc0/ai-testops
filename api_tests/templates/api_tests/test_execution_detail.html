@@ -4,19 +4,62 @@
 {% block title %}Test Execution Detail{% endblock %}
 
 {% block content %}
-<h1 class="mt-5">Test Execution Detail</h1>
+<nav aria-label="breadcrumb" class="mt-5">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'list_test_executions' %}">Test Executions</a></li>
+        <li class="breadcrumb-item active" aria-current="page">ID: {{ test_execution.id }}</li>
+    </ol>
+</nav>
+<div class="d-flex justify-content-between align-items-center mt-5">
+    <h1>Test Execution Detail</h1>
+    <a href="{% url 'list_test_executions' %}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-arrow-left"></i> Back to Test Executions
+    </a>
+</div>
 <div class="card mt-3 rounded shadow-sm p-3">
-    <div class="card-header">
-        <i class="fas fa-info-circle"></i> Execution ID: {{ test_execution.id }}
-    </div>
-    <div class="card-body">
-        <h5 class="card-title"><i class="fas fa-user"></i> User: {{ test_execution.user.username }}</h5>
-        <p class="card-text"><i class="fas fa-info"></i> Info: {{ test_execution.execute_info }}</p>
-        <p class="card-text"><i class="fas fa-check-circle"></i> Pass/Fail: {{ test_execution.report_pass_fail }}</p>
-        <p class="card-text"><i class="fas fa-file-alt"></i> Log: {{ test_execution.log }}</p>
-        <p class="card-text"><i class="fas fa-calendar-alt"></i> Created At: {{ test_execution.created_at }}</p>
-        <p class="card-text"><i class="fas fa-calendar-alt"></i> Updated At: {{ test_execution.updated_at }}</p>
-        <a href="{% url 'execute_tests' test_execution.id %}" class="btn btn-success btn-sm"><i class="fas fa-play"></i> Execute All Tests</a>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> Execution ID: {{ test_execution.id }}
+            </div>
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-user"></i> User: {{ test_execution.user.username }}</h5>
+                <p class="card-text"><i class="fas fa-info"></i> Info: {{ test_execution.execute_info }}</p>
+                <p class="card-text"><i class="fas fa-check-circle"></i> Pass/Fail: {{ test_execution.report_pass_fail }}</p>
+                <p class="card-text"><i class="fas fa-file-alt"></i> Log: {{ test_execution.log }}</p>
+                <p class="card-text"><i class="fas fa-calendar-alt"></i> Created At: {{ test_execution.created_at }}</p>
+                <p class="card-text"><i class="fas fa-calendar-alt"></i> Updated At: {{ test_execution.updated_at }}</p>
+                <button id="execute-all-tests" class="btn btn-success btn-sm"><i class="fas fa-play"></i> Execute All Tests</button>
+                <div id="progress-container" class="mt-3" style="display: none;">
+                    <div class="progress">
+                        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-link"></i> Base URL</h5>
+                <form id="update-base-url-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="test_execution_id" value="{{ test_execution.id }}">
+                    <div class="form-group">
+                        <label for="base-url">Base URL</label>
+                        <input type="text" class="form-control" id="base-url" name="base_url" value="{{ base_url }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Base URL</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-header">
+                <i class="fas fa-chart-bar"></i> Test Case Summary
+            </div>
+            <div class="card-body">
+                <p class="card-text"><i class="fas fa-check-circle"></i> Passed: {{ passed_count }}</p>
+                <p class="card-text"><i class="fas fa-times-circle"></i> Failed: {{ failed_count }}</p>
+                <p class="card-text"><i class="fas fa-hourglass-half"></i> Pending: {{ pending_count }}</p>
+                <p class="card-text"><i class="fas fa-question-circle"></i> Unprocessed: {{ unprocessed_count }}</p>
+            </div>
+        </div>
     </div>
 </div>
 <h2 class="mt-5">Test Cases</h2>
@@ -35,7 +78,7 @@
         <div class="collapse" id="test-case-{{ test_case.id }}">
             <p><strong>Body:</strong> {{ test_case.body }}</p>
             <p><strong>Parameters:</strong> {{ test_case.parameters }}</p>
-            <textarea class="form-control mb-2 code-editor" id="content-{{ test_case.id }}" style="height: 150px;">{{ test_case.content }}</textarea>
+            <div class="code-editor" id="content-{{ test_case.id }}" data-content="{{ test_case.content|escapejs }}"></div>
             <input type="text" class="form-control mb-2" id="additional-prompt-{{ test_case.id }}" placeholder="Additional prompt">
             <button class="btn btn-primary btn-sm" onclick="generateTestCaseContent({{ test_case.id }})"><i class="fas fa-magic"></i> Generate Test Case</button>
             <button class="btn btn-success btn-sm" id="execute-button-{{ test_case.id }}" onclick="executeTestCase({{ test_case.id }})"><i class="fas fa-play"></i> Execute Test</button>
@@ -73,4 +116,57 @@
 
 {% block extra_scripts %}
 <script src="{% static 'js/test_execution_detail.js' %}"></script>
+<script>
+    document.getElementById('update-base-url-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        fetch("{% url 'update_base_url' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Base URL updated successfully');
+            } else {
+                alert('Failed to update Base URL');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the Base URL');
+        });
+    });
+
+    document.getElementById('execute-all-tests').addEventListener('click', async function() {
+        const testCases = JSON.parse('{{ test_cases|escapejs }}');
+        const totalTestCases = testCases.length;
+        let completedTestCases = 0;
+
+        document.getElementById('progress-container').style.display = 'block';
+
+        for (const testCase of testCases) {
+            try {
+                const generateResponse = await fetch(`/api_test/api/generate_test_case_content/${testCase.id}/`);
+                const generateData = await generateResponse.json();
+                if (generateData.content) {
+                    const executeResponse = await fetch(`/api_test/api/execute_test_case/${testCase.id}/`);
+                    await executeResponse.json();
+                    completedTestCases++;
+                    const progress = Math.round((completedTestCases / totalTestCases) * 100);
+                    document.getElementById('progress-bar').style.width = `${progress}%`;
+                    document.getElementById('progress-bar').innerText = `${progress}%`;
+                    document.getElementById('progress-bar').setAttribute('aria-valuenow', progress);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        alert('All tests executed successfully');
+    });
+</script>
 {% endblock %}

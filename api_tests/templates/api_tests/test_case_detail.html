@@ -6,19 +6,19 @@
 <h1 class="mt-5">Test Case Detail</h1>
 <div class="card mt-3">
     <div class="card-header">
-        Test Case ID: {{ test_case.id }}
+        <i class="fas fa-info-circle"></i> Test Case ID: {{ test_case.id }}
     </div>
     <div class="card-body">
-        <h5 class="card-title">URL: {{ test_case.url }}</h5>
-        <p class="card-text">Method: {{ test_case.method }}</p>
-        <p class="card-text">Body: {{ test_case.body }}</p>
-        <p class="card-text">Parameters: {{ test_case.parameters }}</p>
-        <p class="card-text">Content: {{ test_case.content }}</p>
-        <p class="card-text">Result: {{ test_case.result }}</p>
-        <p class="card-text">Error Details: {{ test_case.error_details }}</p>
-        <p class="card-text">Request/Response: {{ test_case.request_response }}</p>
-        <p class="card-text">Created At: {{ test_case.created_at }}</p>
-        <p class="card-text">Updated At: {{ test_case.updated_at }}</p>
+        <h5 class="card-title"><i class="fas fa-link"></i> URL: {{ test_case.url }}</h5>
+        <p class="card-text"><i class="fas fa-code"></i> Method: {{ test_case.method }}</p>
+        <p class="card-text"><i class="fas fa-file-alt"></i> Body: {{ test_case.body }}</p>
+        <p class="card-text"><i class="fas fa-list"></i> Parameters: {{ test_case.parameters }}</p>
+        <p class="card-text"><i class="fas fa-file-code"></i> Content: {{ test_case.content }}</p>
+        <p class="card-text"><i class="fas fa-check-circle"></i> Result: {{ test_case.result }}</p>
+        <p class="card-text"><i class="fas fa-exclamation-triangle"></i> Error Details: {{ test_case.error_details }}</p>
+        <p class="card-text"><i class="fas fa-exchange-alt"></i> Request/Response: {{ test_case.request_response }}</p>
+        <p class="card-text"><i class="fas fa-calendar-alt"></i> Created At: {{ test_case.created_at }}</p>
+        <p class="card-text"><i class="fas fa-calendar-alt"></i> Updated At: {{ test_case.updated_at }}</p>
     </div>
 </div>
 

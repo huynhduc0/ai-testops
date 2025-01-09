@@ -4,22 +4,66 @@
     <title>{% block title %}API Tests{% endblock %}</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs/loader.min.js"></script>
     <style>
         body {
             background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        .navbar {
-            margin-bottom: 20px;
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #343a40;
+            padding-top: 20px;
+            transition: 0.3s;
+            overflow-y: auto;
+        }
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #007bff;
+        }
+        .sidebar .active {
+            background-color: #007bff;
+        }
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .footer {
+            padding: 10px 0;
+            background-color: #343a40;
+            color: #fff;
+            text-align: center;
+            position: sticky;
+            bottom: 0;
+            width: 100%;
+        }
+        .navbar-brand img {
+            height: 30px;
+            margin-right: 10px;
         }
         .card {
-            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
         }
         .btn {
             margin-right: 5px;
@@ -35,27 +79,90 @@
         }
         .code-editor {
             font-size: 0.875rem;
+            height: 300px;
+            overflow: hidden;
+        }
+        .list-group-item {
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .card-header {
+            border-radius: 5px 5px 0 0;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+        }
+        .card-body {
+            border-radius: 0 0 5px 5px;
+        }
+        .sidebar .dropdown-menu {
+            background-color: #343a40;
+            border: none;
+        }
+        .sidebar .dropdown-item {
+            color: #fff;
+        }
+        .sidebar .dropdown-item:hover {
+            background-color: #007bff;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-overlay .spinner-border {
+            width: 3rem;
+            height: 3rem;
         }
     </style>
     {% block extra_head %}{% endblock %}
+    {% load static %}
 </head>
-<body class="container mt-5">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="{% url 'parse_and_test' %}">API Tests</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'parse_and_test' %}">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'list_test_executions' %}">Test Executions</a>
-                </li>
-            </ul>
+<body>
+    <div class="sidebar">
+        <a class="navbar-brand" href="{% url 'parse_and_test' %}">
+            <img src="{% static 'images/logo.png' %}" alt="Logo"> API Tests
+        </a>
+        <a href="{% url 'parse_and_test' %}" class="{% if request.resolver_match.url_name == 'parse_and_test' %}active{% endif %}"><i class="bi bi-house-door"></i> Home</a>
+        <a href="{% url 'list_test_executions' %}" class="{% if request.resolver_match.url_name == 'list_test_executions' or request.resolver_match.url_name == 'test_execution_detail' %}active{% endif %}"><i class="bi bi-list-check"></i> Test Executions</a>
+        <div class="collapse {% if request.resolver_match.url_name == 'list_test_executions' or request.resolver_match.url_name == 'test_execution_detail' %}show{% endif %}" id="testExecutionsDropdown">
+            {% for execution in test_executions %}
+            <a class="dropdown-item" href="{% url 'test_execution_detail' execution.id %}"><i class="bi bi-file-earmark-text"></i> Execution ID: {{ execution.id }}</a>
+            {% endfor %}
         </div>
-    </nav>
-    <div>
+    </div>
+    <div class="content">
         {% block content %}{% endblock %}
     </div>
-    {% block extra_scripts %}{% endblock %}
+    <footer class="footer">
+        <p>&copy; 2024 API TestOps - Duc Truong. All rights reserved.</p>
+    </footer>
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    {% block extra_scripts %}
+    <script>
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            document.querySelectorAll('.code-editor').forEach(function(textarea) {
+                monaco.editor.create(textarea, {
+                    value: textarea.value,
+                    language: 'javascript',
+                    theme: 'vs-dark',
+                    automaticLayout: true
+                });
+            });
+        });
+    </script>
+    {% endblock %}
 </body>
 </html>

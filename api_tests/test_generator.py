@@ -10,8 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 
-def generate_test_case(llm, test_case, additional_prompt=''):
-    base_url = test_case.test_execution.execute_info.split(' ')[-1]
+def generate_test_case(llm, test_case, base_url, additional_prompt=''):
     prompt = (
         f"""
         Generate a pytest test case for the following API endpoint:
@@ -33,6 +32,7 @@ def generate_test_case(llm, test_case, additional_prompt=''):
         *   Handle potential errors gracefully (e.g., connection errors).
         *   If details provide example response, use it to create assertions.
         *   If no example response is provided, create basic status code check.
+        *   Cover boundary tests (e.g., empty input, maximum length input).
 
         Example of expected output format:
 
@@ -86,6 +86,7 @@ def generate_test_cases(llm, swagger_data):
                 *   Handle potential errors gracefully (e.g., connection errors).
                 *   If details provide example response, use it to create assertions.
                 *   If no example response is provided, create basic status code check.
+                *   Cover boundary tests (e.g., empty input, maximum length input).
 
                 Example of expected output format:
 
@@ -138,9 +139,6 @@ def request_run_test_case(test_case_id, test_case_content):
     producer.flush()
     logging.debug(f"Sent test case ID {test_case_id} to Kafka")
 
-def save_test_result_to_db(test_case_id, status, log_output):
-    # Implement database save logic here
-    pass
 
 def generate_report(results):
     report = "API Test Report\n\n"

@@ -6,13 +6,13 @@
 <h1 class="mt-5">Test Result Detail</h1>
 <div class="card mt-3">
     <div class="card-header">
-        Test Result ID: {{ test_result.id }}
+        <i class="fas fa-info-circle"></i> Test Result ID: {{ test_result.id }}
     </div>
     <div class="card-body">
-        <h5 class="card-title">Owner: {{ test_result.owner.username }}</h5>
-        <p class="card-text">Status: {{ test_result.status }}</p>
-        <p class="card-text">Log: {{ test_result.log }}</p>
-        <p class="card-text">Created At: {{ test_result.created_at }}</p>
+        <h5 class="card-title"><i class="fas fa-user"></i> Owner: {{ test_result.owner.username }}</h5>
+        <p class="card-text"><i class="fas fa-check-circle"></i> Status: {{ test_result.status }}</p>
+        <p class="card-text"><i class="fas fa-file-alt"></i> Log: {{ test_result.log }}</p>
+        <p class="card-text"><i class="fas fa-calendar-alt"></i> Created At: {{ test_result.created_at }}</p>
     </div>
 </div>
 {% endblock %}

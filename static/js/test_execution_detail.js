@@ -6,22 +6,29 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function initializeCodeEditors() {
-    document.querySelectorAll('.code-editor').forEach(function(textarea) {
-        if (!codeEditors[textarea.id]) {
-            const editor = CodeMirror.fromTextArea(textarea, {
-                lineNumbers: true,
-                mode: "javascript",
-                theme: "default",
-                viewportMargin: Infinity
-            });
-            codeEditors[textarea.id] = editor;
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs' }});
+    require(['vs/editor/editor.main'], function() {
+        document.querySelectorAll('.code-editor').forEach(function(textarea) {
+            if (!codeEditors[textarea.id]) {
+                const editorContainer = document.createElement('div');
+                editorContainer.style.height = '300px';
+                textarea.parentNode.replaceChild(editorContainer, textarea);
 
-            // Add blur event for autosave functionality
-            editor.on('blur', function() {
-                const testCaseId = textarea.id.split('-')[1];
-                autosaveTestCaseContent(testCaseId, editor.getValue());
-            });
-        }
+                const editor = monaco.editor.create(editorContainer, {
+                    value: decodeURIComponent(JSON.parse('"' + textarea.getAttribute('data-content').replace(/\"/g, '\\"') + '"')).trim(),
+                    language: 'python',
+                    theme: 'vs-dark',
+                    automaticLayout: true
+                });
+                codeEditors[textarea.id] = editor;
+
+                // Add blur event for autosave functionality
+                editor.onDidBlurEditorText(function() {
+                    const testCaseId = textarea.id.split('-')[1];
+                    autosaveTestCaseContent(testCaseId, editor.getValue());
+                });
+            }
+        });
     });
 }
 
@@ -72,7 +79,6 @@ function executeTestCase(test_case_id) {
         type: "GET",
         success: function(data) {
             $('#loading').hide();
-            $('#test-result-' + test_case_id).html('<pre>' + data.report + '</pre>');
             if (data.error_details) {
                 $('#test-result-' + test_case_id).append('<pre class="text-warning">' + data.error_details + '</pre>');
             }
@@ -106,6 +112,7 @@ function checkTestCaseStatus(test_case_id) {
                     clearInterval(intervalId);
                     updateTestResult(test_case_id, data.test_case.test_result);
                     $('#execute-button-' + test_case_id).html('<i class="fas fa-check"></i> Executed').addClass('btn-success').removeClass('btn-primary');
+                    $('#execute-button-' + test_case_id).prop('disabled', false);
                 }
             },
             error: function(xhr) {
