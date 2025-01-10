@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 from .extraction import parse_swagger_from_url, get_base_url
 from .test_generator import request_run_test_case, generate_report, generate_test_case
 from .models import TestExecution, TestCase, TestResult, BaseUrl
@@ -13,6 +14,7 @@ from django.views import View
 from django.core.serializers.json import DjangoJSONEncoder
 
 # Page Views
+@login_required
 def parse_and_test(request):
     if request.method == 'POST':
         try:
@@ -50,13 +52,16 @@ def parse_and_test(request):
     
     return render(request, 'api_tests/test_form.html')
 
+@login_required
 def test_api_view(request):
     return render(request, 'api_tests/test_form.html')
 
+@login_required
 def list_test_executions(request):
     test_executions = TestExecution.objects.all()
     return render(request, 'api_tests/list_test_executions.html', {'test_executions': test_executions})
 
+@login_required
 def test_execution_detail(request, pk):
     test_execution = TestExecution.objects.get(pk=pk)
     passed_count = test_execution.test_cases.filter(test_results__status='passed').count()
@@ -74,11 +79,13 @@ def test_execution_detail(request, pk):
         'test_cases': json.dumps(test_cases, cls=DjangoJSONEncoder)
     })
 
+@login_required
 def test_result_detail(request, test_result_id):
     test_result = TestResult.objects.get(id=test_result_id)
     return render(request, 'api_tests/test_result_detail.html', {'test_result': test_result})
 
 # API Views
+@login_required
 def generate_test_case_content(request, test_case_id):
     try:
         llm = GeminiLLM("AIzaSyDey1NPVwZjxaj0F4k286NT4ra0hZNRFRo")
@@ -90,6 +97,7 @@ def generate_test_case_content(request, test_case_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
+@login_required
 def execute_test_case(request, test_case_id):
     try:
         test_case = TestCase.objects.get(id=test_case_id)
@@ -103,6 +111,7 @@ def execute_test_case(request, test_case_id):
         print(e)
         return JsonResponse({'error': str(e)}, status=400)
 
+@login_required
 def execute_tests(request, execution_id):
     try:
         test_execution = TestExecution.objects.get(id=execution_id)
@@ -174,6 +183,7 @@ def save_test_case_content(request, test_case_id):
             return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+@login_required
 def test_case_detail_api(request, test_case_id):
     try:
         test_case = TestCase.objects.get(id=test_case_id)
@@ -201,6 +211,7 @@ def test_case_detail_api(request, test_case_id):
     except TestCase.DoesNotExist:
         return JsonResponse({'error': 'Test case not found'}, status=404)
 
+@login_required
 def update_base_url(request):
     if request.method == 'POST':
         new_base_url = request.POST.get('base_url')
@@ -213,3 +224,17 @@ def update_base_url(request):
         except TestExecution.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'TestExecution not found'})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+def update_test_summary(request):
+    test_execution = TestExecution.objects.get(id=request.GET.get('test_execution_id'))
+    passed_count = test_execution.test_cases.filter(test_results__status='passed').count()
+    failed_count = test_execution.test_cases.filter(test_results__status='failed').count()
+    pending_count = test_execution.test_cases.filter(test_results__status='pending').count()
+    unprocessed_count = test_execution.test_cases.filter(test_results__isnull=True).count()
+    data = {
+        'passed_count': passed_count,
+        'failed_count': failed_count,
+        'pending_count': pending_count,
+        'unprocessed_count': unprocessed_count,
+    }
+    return JsonResponse(data)

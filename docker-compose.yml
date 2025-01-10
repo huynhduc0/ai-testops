@@ -18,32 +18,63 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
     depends_on:
       - zookeeper
+    volumes:
+      - kafka_data_app:/var/lib/kafka/data
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
 
   db:
     image: postgres:13
     environment:
-      POSTGRES_DB: ai_testops
-      POSTGRES_USER: ai_testops_user
-      POSTGRES_PASSWORD: ai_testops_password
+      POSTGRES_DB: canvas_db
+      POSTGRES_USER: canvas_user
+      POSTGRES_PASSWORD: canvas_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
-  # web:
-  #   build: .
-  #   command: python manage.py runserver 0.0.0.0:8000
-  #   volumes:
-  #     - .:/code
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     - db
-  #     - kafka
-  #   environment:
-  #     - DB_NAME=ai_testops
-  #     - DB_USER=ai_testops_user
-  #     - DB_PASSWORD=ai_testops_password
-  #     - DB_HOST=db
-  #     - DB_PORT=5432
-  #     - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DB: canvas_db
+      POSTGRES_USER: canvas_user
+      POSTGRES_PASSWORD: canvas_password
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+
+  test-execute-consumer:
+    build:
+      context: .
+      dockerfile: test-execute-consumer/Dockerfile
+    command: python watch.py
+    volumes:
+      - .:/code
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKER: kafka:9092
+
+volumes:
+  postgres_data:
+  kafka_data_app:

@@ -4,19 +4,19 @@
 {% block title %}Test Execution Detail{% endblock %}
 
 {% block content %}
-<nav aria-label="breadcrumb" class="mt-5">
+<nav aria-label="breadcrumb" class="mt-2">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'list_test_executions' %}">Test Executions</a></li>
         <li class="breadcrumb-item active" aria-current="page">ID: {{ test_execution.id }}</li>
     </ol>
 </nav>
-<div class="d-flex justify-content-between align-items-center mt-5">
+<div class="d-flex justify-content-between align-items-center mt-2">
     <h1>Test Execution Detail</h1>
     <a href="{% url 'list_test_executions' %}" class="btn btn-outline-primary btn-sm">
         <i class="fas fa-arrow-left"></i> Back to Test Executions
     </a>
 </div>
-<div class="card mt-3 rounded shadow-sm p-3">
+<div class="card mt-2 rounded shadow-sm p-2">
     <div class="row">
         <div class="col-md-8">
             <div class="card-header">
@@ -30,11 +30,15 @@
                 <p class="card-text"><i class="fas fa-calendar-alt"></i> Created At: {{ test_execution.created_at }}</p>
                 <p class="card-text"><i class="fas fa-calendar-alt"></i> Updated At: {{ test_execution.updated_at }}</p>
                 <button id="execute-all-tests" class="btn btn-success btn-sm"><i class="fas fa-play"></i> Execute All Tests</button>
-                <div id="progress-container" class="mt-3" style="display: none;">
+                <button id="generate-all-tests" class="btn btn-primary btn-sm"><i class="fas fa-magic"></i> Generate All Tests</button>
+                <button id="generate-missing-tests" class="btn btn-warning btn-sm"><i class="fas fa-magic"></i> Generate Missing Tests</button>
+                <button id="run-all-tests" class="btn btn-success btn-sm"><i class="fas fa-play"></i> Run All Tests</button>
+                <div id="progress-container" class="mt-2" style="display: none;">
                     <div class="progress">
                         <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
                     </div>
                 </div>
+                <div id="log-container" class="log-container mt-2"></div>
             </div>
             <div class="card-body">
                 <h5 class="card-title"><i class="fas fa-link"></i> Base URL</h5>
@@ -52,20 +56,24 @@
         <div class="col-md-4">
             <div class="card-header">
                 <i class="fas fa-chart-bar"></i> Test Case Summary
+                <button class="btn btn-secondary btn-sm float-end" onclick="reloadTestCaseSummary()"><i class="fas fa-sync-alt"></i></button>
             </div>
             <div class="card-body">
-                <p class="card-text"><i class="fas fa-check-circle"></i> Passed: {{ passed_count }}</p>
-                <p class="card-text"><i class="fas fa-times-circle"></i> Failed: {{ failed_count }}</p>
-                <p class="card-text"><i class="fas fa-hourglass-half"></i> Pending: {{ pending_count }}</p>
-                <p class="card-text"><i class="fas fa-question-circle"></i> Unprocessed: {{ unprocessed_count }}</p>
+                <p class="card-text"><i class="fas fa-check-circle"></i> Passed: <span id="passed-count">{{ passed_count }}</span></p>
+                <p class="card-text"><i class="fas fa-times-circle"></i> Failed: <span id="failed-count">{{ failed_count }}</span></p>
+                <p class="card-text"><i class="fas fa-hourglass-half"></i> Pending: <span id="pending-count">{{ pending_count }}</span></p>
+                <p class="card-text"><i class="fas fa-question-circle"></i> Unprocessed: <span id="unprocessed-count">{{ unprocessed_count }}</span></p>
+            </div>
+            <div id="loading" class="spinner-border text-primary" role="status" style="display: none;">
+                <span class="sr-only">Loading...</span>
             </div>
         </div>
     </div>
 </div>
-<h2 class="mt-5">Test Cases</h2>
-<ul class="list-group mt-3">
+<h2 class="mt-3">Test Cases</h2>
+<ul class="list-group mt-2">
     {% for test_case in test_execution.test_cases.all %}
-    <li class="list-group-item border rounded shadow-sm p-3 {% if not test_case.test_results.exists %}border-light{% elif test_case.test_results.last.status == 'passed' %}border-success{% elif test_case.test_results.last.status == 'failed' %}border-danger{% endif %}">
+    <li class="list-group-item border rounded shadow-sm p-2 mb-2 {% if not test_case.test_results.exists %}border-light{% elif test_case.test_results.last.status == 'passed' %}border-success bg-light-success{% elif test_case.test_results.last.status == 'failed' %}border-danger bg-light-danger{% else %}border-warning bg-light-warning{% endif %}">
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <p><strong>URL:</strong> {{ test_case.url }}</p>
@@ -83,6 +91,7 @@
             <button class="btn btn-primary btn-sm" onclick="generateTestCaseContent({{ test_case.id }})"><i class="fas fa-magic"></i> Generate Test Case</button>
             <button class="btn btn-success btn-sm" id="execute-button-{{ test_case.id }}" onclick="executeTestCase({{ test_case.id }})"><i class="fas fa-play"></i> Execute Test</button>
             <button class="btn btn-info btn-sm" onclick="viewTestResult({{ test_case.id }})"><i class="fas fa-eye"></i> View Result</button>
+            <button class="btn btn-secondary btn-sm" onclick="reloadTestResult({{ test_case.id }})"><i class="fas fa-sync-alt"></i> Reload Result</button>
             <div id="test-result-{{ test_case.id }}"></div>
         </div>
     </li>
@@ -108,65 +117,86 @@
         </div>
     </div>
 </div>
+
+<div aria-live="polite" aria-atomic="true" class="position-relative">
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+</div>
 {% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/test_execution_detail.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .log-container {
+        max-height: 300px;
+        overflow-y: auto;
+        position: relative;
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .log-message {
+        transition: opacity 0.5s;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+        opacity: 1;
+    }
+    .log-message.text-bg-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    .log-message.text-bg-success {
+        background-color: #28a745;
+        color: white;
+    }
+    .log-message.text-bg-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+    .log-message .text-muted {
+        font-size: 0.875rem;
+    }
+    .toast {
+        font-size: 0.875rem;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .toast .toast-body {
+        color: white;
+    }
+    .toast.text-bg-success {
+        background-color: #28a745;
+    }
+    .toast.text-bg-danger {
+        background-color: #dc3545;
+    }
+    .toast.text-bg-info {
+        background-color: #17a2b8;
+    }
+    .toast.text-bg-warning {
+        background-color: #ffc107;
+    }
+    .bg-light-success {
+        background-color: #d4edda;
+        border: 1px solid #28a745;
+    }
+    .bg-light-danger {
+        background-color: #f8d7da;
+        border: 1px solid #dc3545;
+    }
+    .bg-light-warning {
+        background-color: #fff3cd;
+        border: 1px solid #ffc107;
+    }
+</style>
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="{% static 'js/test_execution_detail.js' %}"></script>
 <script>
-    document.getElementById('update-base-url-form').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const formData = new FormData(this);
-        fetch("{% url 'update_base_url' %}", {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Base URL updated successfully');
-            } else {
-                alert('Failed to update Base URL');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while updating the Base URL');
-        });
-    });
-
-    document.getElementById('execute-all-tests').addEventListener('click', async function() {
-        const testCases = JSON.parse('{{ test_cases|escapejs }}');
-        const totalTestCases = testCases.length;
-        let completedTestCases = 0;
-
-        document.getElementById('progress-container').style.display = 'block';
-
-        for (const testCase of testCases) {
-            try {
-                const generateResponse = await fetch(`/api_test/api/generate_test_case_content/${testCase.id}/`);
-                const generateData = await generateResponse.json();
-                if (generateData.content) {
-                    const executeResponse = await fetch(`/api_test/api/execute_test_case/${testCase.id}/`);
-                    await executeResponse.json();
-                    completedTestCases++;
-                    const progress = Math.round((completedTestCases / totalTestCases) * 100);
-                    document.getElementById('progress-bar').style.width = `${progress}%`;
-                    document.getElementById('progress-bar').innerText = `${progress}%`;
-                    document.getElementById('progress-bar').setAttribute('aria-valuenow', progress);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        alert('All tests executed successfully');
-    });
+    const testExecutionId = {{ test_execution.id }};
+    const testCases = JSON.parse('{{ test_cases|escapejs }}'.replace(/&quot;/g, '"'));
 </script>
+<script src="{% static 'js/test_execution_detail.js' %}"></script>
 {% endblock %}

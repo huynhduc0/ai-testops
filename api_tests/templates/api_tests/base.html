@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>{% block title %}API Tests{% endblock %}</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -121,25 +121,63 @@
             width: 3rem;
             height: 3rem;
         }
+        .navbar-nav {
+            margin-left: auto; /* Pushes the nav items to the right */
+        }
+        .navbar-nav .nav-item .nav-link {
+            color: #000;
+            white-space: nowrap; /* Ensure no break */
+        }
+        .navbar-nav .nav-item .nav-link:hover {
+            color: #007bff;
+        }
     </style>
     {% block extra_head %}{% endblock %}
     {% load static %}
 </head>
 <body>
-    <div class="sidebar">
-        <a class="navbar-brand" href="{% url 'parse_and_test' %}">
-            <img src="{% static 'images/logo.png' %}" alt="Logo"> API Tests
-        </a>
-        <a href="{% url 'parse_and_test' %}" class="{% if request.resolver_match.url_name == 'parse_and_test' %}active{% endif %}"><i class="bi bi-house-door"></i> Home</a>
-        <a href="{% url 'list_test_executions' %}" class="{% if request.resolver_match.url_name == 'list_test_executions' or request.resolver_match.url_name == 'test_execution_detail' %}active{% endif %}"><i class="bi bi-list-check"></i> Test Executions</a>
-        <div class="collapse {% if request.resolver_match.url_name == 'list_test_executions' or request.resolver_match.url_name == 'test_execution_detail' %}show{% endif %}" id="testExecutionsDropdown">
-            {% for execution in test_executions %}
-            <a class="dropdown-item" href="{% url 'test_execution_detail' execution.id %}"><i class="bi bi-file-earmark-text"></i> Execution ID: {{ execution.id }}</a>
-            {% endfor %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'parse_and_test' %}">API TestOps</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'list_test_executions' %}">Test Executions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout'">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
-    </div>
-    <div class="content">
-        {% block content %}{% endblock %}
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 sidebar">
+                <a class="navbar-brand" href="{% url 'parse_and_test' %}">
+                    API TestOps
+                </a>
+                <a href="{% url 'parse_and_test' %}" class="{% if request.resolver_match.url_name == 'parse_and_test' %}active{% endif %}"><i class="bi bi-house-door"></i> Home</a>
+                <a href="{% url 'list_test_executions' %}" class="{% if request.resolver_match.url_name == 'list_test_executions' or request.resolver_match.url_name == 'test_execution_detail' %}active{% endif %}"><i class="bi bi-list-check"></i> Test Executions</a>
+                <div class="collapse {% if request.resolver_match.url_name == 'list_test_executions' or request.resolver_match.url_name == 'test_execution_detail' %}show{% endif %}" id="testExecutionsDropdown">
+                    {% for execution in test_executions %}
+                    <a class="dropdown-item" href="{% url 'test_execution_detail' execution.id %}"><i class="bi bi-file-earmark-text"></i> Execution ID: {{ execution.id }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-10 content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
     </div>
     <footer class="footer">
         <p>&copy; 2024 API TestOps - Duc Truong. All rights reserved.</p>

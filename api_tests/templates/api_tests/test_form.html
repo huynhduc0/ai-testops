@@ -1,135 +1,17 @@
 {% extends 'api_tests/base.html' %}
 
-{% block title %}Test API{% endblock %}
+{% block title %}Test Form{% endblock %}
 
 {% block content %}
-<h1 class="mt-5">Enter your Swagger URL</h1>
-<form id="generate-tests-form" method="POST" class="form-inline mt-3">
-    {% csrf_token %}
-    <input type="text" name="swagger_url" placeholder="Swagger URL" class="form-control mr-2">
-    <button type="submit" class="btn btn-primary">Generate Tests</button>
-</form>
-
-<div id="loading" class="spinner-border text-primary mt-3" role="status" style="display: none;">
-    <span class="sr-only">Loading...</span>
+<div class="container mt-5">
+    <h1>Test Form</h1>
+    <form method="post" action="{% url 'parse_and_test' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="swagger_url">Swagger URL</label>
+            <input type="url" class="form-control" id="swagger_url" name="swagger_url" placeholder="Enter Swagger URL" required>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+    </form>
 </div>
-
-<div id="error-message" class="alert alert-danger mt-3" style="display: none;"></div>
-
-<input type="hidden" id="test-execution-id">
-
-<div id="test-cases" class="mt-5"></div>
-
-{% if test_execution %}
-    <h2 class="mt-5">Test Execution Created</h2>
-    <p>Test Execution ID: {{ test_execution.id }}</p>
-    <a href="{% url 'execute_tests' test_execution.id %}"><button class="btn btn-success">Execute All Tests</button></a>
-{% endif %}
-
-{% if report %}
-    <h2 class="mt-5">Test Report</h2>
-    <pre>{{ report }}</pre>
-{% endif %}
 {% endblock %}
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
-<script>
-    var codeEditors = {};
-
-    $(document).ready(function() {
-        $('#generate-tests-form').on('submit', function(event) {
-            event.preventDefault();
-            $('#loading').show();
-            $.ajax({
-                url: "{% url 'parse_and_test' %}",
-                type: "POST",
-                data: $(this).serialize(),
-                success: function(data) {
-                    $('#loading').hide();
-                    $('#test-execution-id').val(data.execution_id);
-                    $('#test-cases').empty();
-                    $('#test-cases').append('<h2>Generated Test Cases</h2><ul class="list-group">');
-                    $.each(data.test_cases, function(index, test_case) {
-                        $('#test-cases ul').append(
-                            '<li class="list-group-item">' +
-                            '<p><strong>URL:</strong> ' + test_case.url + '</p>' +
-                            '<p><strong>Method:</strong> ' + test_case.method + '</p>' +
-                            '<p><strong>Body:</strong> ' + test_case.body + '</p>' +
-                            '<p><strong>Parameters:</strong> ' + test_case.parameters + '</p>' +
-                            '<textarea class="form-control mb-2 code-editor" id="content-' + test_case.id + '">' + test_case.content + '</textarea>' +
-                            '<input type="text" class="form-control mb-2" id="additional-prompt-' + test_case.id + '" placeholder="Additional prompt">' +
-                            '<button class="btn btn-primary" onclick="generateTestCaseContent(' + test_case.id + ')">Generate Test Case</button> ' +
-                            '<button class="btn btn-success" onclick="executeTestCase(' + test_case.id + ')">Execute Test</button>' +
-                            '<div id="test-result-' + test_case.id + '"></div>' +
-                            '</li>'
-                        );
-                    });
-                    $('#test-cases').append('</ul>');
-                    initializeCodeEditors();
-                },
-                error: function(xhr) {
-                    $('#loading').hide();
-                    $('#error-message').text(xhr.responseJSON.error).show();
-                }
-            });
-        });
-    });
-
-    function initializeCodeEditors() {
-        $('.code-editor').each(function() {
-            var editorId = $(this).attr('id');
-            codeEditors[editorId] = CodeMirror.fromTextArea(document.getElementById(editorId), {
-                lineNumbers: true,
-                mode: "javascript"
-            });
-        });
-    }
-
-    function generateTestCaseContent(test_case_id) {
-        $('#loading').show();
-        const additionalPrompt = $('#additional-prompt-' + test_case_id).val();
-        $.ajax({
-            url: "{% url 'generate_test_case_content' test_case_id=0 %}".replace('0', test_case_id) + '?additional_prompt=' + encodeURIComponent(additionalPrompt),
-            type: "GET",
-            success: function(data) {
-                $('#loading').hide();
-                const editor = codeEditors['content-' + test_case_id];
-                editor.setValue(data.content);
-                alert("Test case content generated.");
-            },
-            error: function(xhr) {
-                $('#loading').hide();
-                $('#error-message').text(xhr.responseJSON.error).show();
-            }
-        });
-    }
-
-    function executeTestCase(test_case_id) {
-        $('#loading').show();
-        $.ajax({
-            url: "{% url 'execute_test_case' test_case_id=0 %}".replace('0', test_case_id),
-            type: "GET",
-            success: function(data) {
-                $('#loading').hide();
-                $('#test-result-' + test_case_id).html('<pre>' + data.report + '</pre>');
-                if (data.error_details) {
-                    $('#test-result-' + test_case_id).append('<pre class="text-danger">' + data.error_details + '</pre>');
-                }
-                if (data.summary) {
-                    $('#test-result-' + test_case_id).append('<pre class="text-warning">' + data.summary + '</pre>');
-                }
-                if (data.log) {
-                    $('#test-result-' + test_case_id).append('<pre class="text-info">' + data.log + '</pre>');
-                }
-            },
-            error: function(xhr) {
-                $('#loading').hide();
-                $('#test-result-' + test_case_id).html('<pre>' + xhr.responseText + '</pre>');
-            }
-        });
-    }
-</script>

@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import save_test_case_content, parse_and_test, test_api_view, execute_tests, execute_test_case, generate_test_case_content, save_test_result, list_test_executions, test_execution_detail, test_case_detail_api, test_result_detail, update_base_url
+from django.contrib.auth.views import LogoutView
+from .views import save_test_case_content, parse_and_test, test_api_view, execute_tests, execute_test_case, generate_test_case_content, save_test_result, list_test_executions, test_execution_detail, test_case_detail_api, test_result_detail, update_base_url, update_test_summary
 
 urlpatterns = [
     # Page Views
@@ -17,4 +18,5 @@ urlpatterns = [
     path('api/testcase/save/<int:test_case_id>/', save_test_case_content, name='save_test_case_content'),
     path('api/test_case/<int:test_case_id>/', test_case_detail_api, name='test_case_detail_api'),
     path('update_base_url/', update_base_url, name='update_base_url'),
+    path('api/update_test_summary/', update_test_summary, name='update_test_summary'),
 ]
