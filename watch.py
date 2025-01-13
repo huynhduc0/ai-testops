@@ -71,7 +71,7 @@ def run_test_case(test_case_id, test_file_content):
         os.remove('temp_test_file.py')
 
 def save_test_result_to_db(test_case_id, status, log):
-    url = f"http://app:8000/api_test/api/save/{test_case_id}/"
+    url = f"http://localhost:8000/api_test/save/{test_case_id}/"
     data = {
         'status': status,
         'log': log

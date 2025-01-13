@@ -49,7 +49,7 @@
                         <label for="base-url">Base URL</label>
                         <input type="text" class="form-control" id="base-url" name="base_url" value="{{ base_url }}">
                     </div>
-                    <button type="submit" class="btn btn-primary">Update Base URL</button>
+                    <button type="button" class="btn btn-primary" onclick="updateBaseUrl()">Update Base URL</button>
                 </form>
             </div>
         </div>
@@ -194,9 +194,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-    const testExecutionId = {{ test_execution.id }};
-    const testCases = JSON.parse('{{ test_cases|escapejs }}'.replace(/&quot;/g, '"'));
-</script>
 <script src="{% static 'js/test_execution_detail.js' %}"></script>
 {% endblock %}

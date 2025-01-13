@@ -369,3 +369,33 @@ function reloadTestCaseSummary() {
         }
     });
 }
+
+function updateBaseUrl() {
+    const baseUrl = document.getElementById('base-url').value;
+    const testExecutionId = document.querySelector('[name="test_execution_id"]').value;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch("/api_test/update_base_url/", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            base_url: baseUrl,
+            test_execution_id: testExecutionId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Base URL updated successfully');
+        } else {
+            alert('Failed to update Base URL: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the Base URL');
+    });
+}

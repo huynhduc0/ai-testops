@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.core.serializers.json import DjangoJSONEncoder
+from django.views.decorators.http import require_POST
 
 # Page Views
 @login_required
@@ -19,13 +20,13 @@ def parse_and_test(request):
     if request.method == 'POST':
         try:
             swagger_url = request.POST.get('swagger_url')
+            base_url = get_base_url(str(swagger_url))
+            print("base_url", base_url)
             swagger_data = parse_swagger_from_url(swagger_url)
-            base_url = get_base_url(swagger_data)
-            print(base_url)
             test_execution, created = TestExecution.objects.get_or_create(
                 user=request.user,
                 execute_info=f"Tested Swagger from {swagger_url} with base URL {base_url}",
-                defaults={'report_pass_fail': False, 'log': ""}
+                defaults={'report_pass_fail': False, 'log': "", 'base_url': base_url}
             )
             
             test_cases = []
@@ -46,7 +47,7 @@ def parse_and_test(request):
                         'content': test_case.content
                     })
             
-            return JsonResponse({'execution_id': test_execution.id, 'test_cases': test_cases})
+            return redirect(reverse('test_execution_detail', args=[test_execution.id]))
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
     
@@ -211,19 +212,21 @@ def test_case_detail_api(request, test_case_id):
     except TestCase.DoesNotExist:
         return JsonResponse({'error': 'Test case not found'}, status=404)
 
-@login_required
+@csrf_exempt
+@require_POST
 def update_base_url(request):
-    if request.method == 'POST':
-        new_base_url = request.POST.get('base_url')
-        test_execution_id = request.POST.get('test_execution_id')
-        try:
-            test_execution = TestExecution.objects.get(id=test_execution_id)
-            test_execution.base_url = new_base_url
-            test_execution.save()
-            return JsonResponse({'success': True})
-        except TestExecution.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'TestExecution not found'})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    try:
+        data = json.loads(request.body)
+        new_base_url = data.get('base_url')
+        test_execution_id = data.get('test_execution_id')
+        test_execution = TestExecution.objects.get(id=test_execution_id)
+        test_execution.base_url = new_base_url
+        test_execution.save()
+        return JsonResponse({'success': True})
+    except TestExecution.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'TestExecution not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
 def update_test_summary(request):
     test_execution = TestExecution.objects.get(id=request.GET.get('test_execution_id'))

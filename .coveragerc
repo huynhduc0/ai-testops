@@ -1,0 +1,19 @@
+[run]
+source = .
+omit =
+    */settings.py        # Skip Django settings file
+    */manage.py          # Skip manage.py
+    */wsgi.py            # Skip wsgi.py
+    */asgi.py            # Skip asgi.py
+    */__init__.py        # Skip __init__.py
+    */migrations/*       # Skip migrations
+    canvas/asgi.py
+    canvas/wsgi.py
+    */tests/*            # Skip test files
+
+[report]
+exclude_lines =
+    pragma: no cover      # Skip lines marked with 'pragma: no cover'
+    def __repr__
+    if self\.debug
+    raise AssertionError
