@@ -57,9 +57,18 @@ jobs:
       run: |
         coverage report
         coverage xml
+        coverage html
+        coverage report | grep 'TOTAL' | awk '{print "Coverage: " $4}'
+        coverage report | grep 'TOTAL' | awk '{if ($4+0 < 75) exit 1}'
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v3
       with:
         name: coverage-report
         path: coverage.xml
+
+    - name: Upload HTML coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-html-report
+        path: htmlcov
