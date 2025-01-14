@@ -37,7 +37,7 @@ class TestWatch(unittest.TestCase):
         mock_post.return_value.status_code = 200
 
         watch.save_test_result_to_db(1, 'passed', 'test log')
-        mock_post.assert_called_once_with('http://localhost:8000/api_test/api/save/1/', json={'status': 'passed', 'log': 'test log'})
+        mock_post.assert_called_once_with('http://localhost:8000/api_test/save/1/', json={'status': 'passed', 'log': 'test log'})
 
 if __name__ == '__main__':
     unittest.main()
