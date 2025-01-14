@@ -16,8 +16,8 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: canvas_user
+          POSTGRES_PASSWORD: canvas_password
           POSTGRES_DB: test_db
         ports:
           - 5432:5432
@@ -43,13 +43,13 @@ jobs:
 
     - name: Run migrations
       env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        DATABASE_URL: postgres://canvas_user:canvas_password@localhost:5432/test_db
       run: |
         python manage.py migrate
 
     - name: Run tests
       env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+        DATABASE_URL: postgres://canvas_user:canvas_password@localhost:5432/test_db
       run: |
         coverage run manage.py test
 
