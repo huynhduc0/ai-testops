@@ -3,38 +3,40 @@
 {% block title %}Test Case Detail{% endblock %}
 
 {% block content %}
-<h1 class="mt-5">Test Case Detail</h1>
-<div class="card mt-3">
-    <div class="card-header">
-        <i class="fas fa-info-circle"></i> Test Case ID: {{ test_case.id }}
+<div class="pl-3">
+    <h1 class="mt-5">Test Case Detail</h1>
+    <div class="card mt-3">
+        <div class="card-header">
+            <i class="fas fa-info-circle"></i> Test Case ID: {{ test_case.id }}
+        </div>
+        <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-link"></i> URL: {{ test_case.url }}</h5>
+            <p class="card-text"><i class="fas fa-code"></i> Method: {{ test_case.method }}</p>
+            <p class="card-text"><i class="fas fa-file-alt"></i> Body: {{ test_case.body }}</p>
+            <p class="card-text"><i class="fas fa-list"></i> Parameters: {{ test_case.parameters }}</p>
+            <p class="card-text"><i class="fas fa-file-code"></i> Content: {{ test_case.content }}</p>
+            <p class="card-text"><i class="fas fa-check-circle"></i> Result: {{ test_case.result }}</p>
+            <p class="card-text"><i class="fas fa-exclamation-triangle"></i> Error Details: {{ test_case.error_details }}</p>
+            <p class="card-text"><i class="fas fa-exchange-alt"></i> Request/Response: {{ test_case.request_response }}</p>
+            <p class="card-text"><i class="fas fa-calendar-alt"></i> Created At: {{ test_case.created_at }}</p>
+            <p class="card-text"><i class="fas fa-calendar-alt"></i> Updated At: {{ test_case.updated_at }}</p>
+        </div>
     </div>
-    <div class="card-body">
-        <h5 class="card-title"><i class="fas fa-link"></i> URL: {{ test_case.url }}</h5>
-        <p class="card-text"><i class="fas fa-code"></i> Method: {{ test_case.method }}</p>
-        <p class="card-text"><i class="fas fa-file-alt"></i> Body: {{ test_case.body }}</p>
-        <p class="card-text"><i class="fas fa-list"></i> Parameters: {{ test_case.parameters }}</p>
-        <p class="card-text"><i class="fas fa-file-code"></i> Content: {{ test_case.content }}</p>
-        <p class="card-text"><i class="fas fa-check-circle"></i> Result: {{ test_case.result }}</p>
-        <p class="card-text"><i class="fas fa-exclamation-triangle"></i> Error Details: {{ test_case.error_details }}</p>
-        <p class="card-text"><i class="fas fa-exchange-alt"></i> Request/Response: {{ test_case.request_response }}</p>
-        <p class="card-text"><i class="fas fa-calendar-alt"></i> Created At: {{ test_case.created_at }}</p>
-        <p class="card-text"><i class="fas fa-calendar-alt"></i> Updated At: {{ test_case.updated_at }}</p>
-    </div>
-</div>
 
-<h2 class="mt-5">Test Result</h2>
-<div class="card mt-3">
-    <div class="card-header">
-        Test Result
-    </div>
-    <div class="card-body">
-        {% if test_result %}
-        <p class="card-text"><strong>Status:</strong> {{ test_result.status }}</p>
-        <p class="card-text"><strong>Log:</strong> {{ test_result.log }}</p>
-        <p class="card-text"><strong>Created At:</strong> {{ test_result.created_at }}</p>
-        {% else %}
-        <p class="card-text">No test result available.</p>
-        {% endif %}
+    <h2 class="mt-5">Test Result</h2>
+    <div class="card mt-3">
+        <div class="card-header">
+            Test Result
+        </div>
+        <div class="card-body">
+            {% if test_result %}
+            <p class="card-text"><strong>Status:</strong> {{ test_result.status }}</p>
+            <p class="card-text"><strong>Log:</strong> {{ test_result.log }}</p>
+            <p class="card-text"><strong>Created At:</strong> {{ test_result.created_at }}</p>
+            {% else %}
+            <p class="card-text">No test result available.</p>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

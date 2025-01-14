@@ -5,6 +5,9 @@ document.addEventListener("DOMContentLoaded", function() {
     initializeCodeEditors();
 });
 
+// Initialize the testCases variable with the test cases data
+let testCases = JSON.parse(document.getElementById('test-cases-data').textContent);
+
 function initializeCodeEditors() {
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs' }});
     require(['vs/editor/editor.main'], function() {
@@ -70,6 +73,7 @@ function generateTestCaseContent(test_case_id) {
             const editor = codeEditors['content-' + test_case_id];
             editor.setValue(data.content);
             addLogMessage(`Generated test case ${test_case_id}`, 'success');
+            toggleDetails(test_case_id); // Auto expand test case details
         },
         error: function(xhr) {
             $('#loading').hide();
@@ -131,6 +135,7 @@ function checkTestCaseStatus(test_case_id) {
                         showToast(`Test case ${data.test_case.url} - id: ${test_case_id} executed successfully`, 'success');
                     }
                     updateTestSummary();
+                    toggleDetails(test_case_id);
                 }
             },
             error: function(xhr) {
@@ -348,6 +353,7 @@ document.getElementById('run-all-tests').addEventListener('click', async functio
 });
 
 function reloadTestCaseSummary() {
+    const testExecutionId = document.querySelector('[name="test_execution_id"]').value;
     $('#loading').show();
     $.ajax({
         url: "/api_test/api/update_test_summary/",

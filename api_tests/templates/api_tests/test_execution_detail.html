@@ -4,6 +4,9 @@
 {% block title %}Test Execution Detail{% endblock %}
 
 {% block content %}
+<script id="test-cases-data" type="application/json">
+    {{ test_cases|safe }}
+</script>
 <nav aria-label="breadcrumb" class="mt-2">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'list_test_executions' %}">Test Executions</a></li>
