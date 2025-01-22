@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 
 # Ignore virtual environment directories
 venv/
@@ -38,3 +39,10 @@ static/
 
 # Ignore media files
 media/
+
+# Ignore Django static files
+staticfiles/
+
+# Ignore other unnecessary files and directories
+.DS_Store
+*.log

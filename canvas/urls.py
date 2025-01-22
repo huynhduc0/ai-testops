@@ -38,4 +38,5 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('logout/', LogoutView.as_view(), name='account_logout'),
     path('api_test/', include('api_tests.urls')),
+    path('', include('django_prometheus.urls')),
 ]

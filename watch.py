@@ -4,9 +4,13 @@ import os
 import subprocess
 import requests
 import json
+from prometheus_client import start_http_server, Counter
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 DEAD_LETTER_QUEUE = 'dead_letter_queue'
+
+# Prometheus metrics
+TEST_CASES_STATUS = Counter('test_cases_status', 'Status of test cases', ['test_case_id', 'status'])
 
 def listen_for_kafka_messages():
     consumer = Consumer({
@@ -33,7 +37,9 @@ def listen_for_kafka_messages():
                 test_file_content = message['script']
                 result = run_test_case(test_case_id, test_file_content)
                 save_test_result_to_db(test_case_id, result['status'], result['log'])
+                TEST_CASES_STATUS.labels(test_case_id=test_case_id, status=result['status']).inc()
             except (json.JSONDecodeError, KeyError) as e:
+                TEST_CASES_STATUS.labels(test_case_id=test_case_id, status="error").inc()
                 logging.error(f"Error parsing message: {e}")
                 producer.produce(DEAD_LETTER_QUEUE, msg.value())
                 producer.flush()
@@ -71,7 +77,7 @@ def run_test_case(test_case_id, test_file_content):
         os.remove('temp_test_file.py')
 
 def save_test_result_to_db(test_case_id, status, log):
-    url = f"http://localhost:8000/api_test/save/{test_case_id}/"
+    url = f"http://app:8000/api_test/api/save/{test_case_id}/"
     data = {
         'status': status,
         'log': log
@@ -84,6 +90,8 @@ def save_test_result_to_db(test_case_id, status, log):
         logging.error(f"Request failed: {e}")
 
 def main():
+    # Start Prometheus metrics server
+    start_http_server(8001)
     listen_for_kafka_messages()
 
 if __name__ == "__main__":

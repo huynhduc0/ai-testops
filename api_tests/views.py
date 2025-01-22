@@ -69,7 +69,7 @@ def test_execution_detail(request, pk):
     failed_count = test_execution.test_cases.filter(test_results__status='failed').count()
     pending_count = test_execution.test_cases.filter(test_results__status='pending').count()
     unprocessed_count = test_execution.test_cases.filter(test_results__isnull=True).count()
-    test_cases = list(test_execution.test_cases.values('id', 'url', 'method', 'body', 'parameters', 'content'))
+    test_cases = list(test_execution.test_cases.values('id', 'url', 'method', 'body', 'parameters', 'content').order_by('url'))
     return render(request, 'api_tests/test_execution_detail.html', {
         'test_execution': test_execution,
         'base_url': test_execution.base_url,
@@ -103,8 +103,9 @@ def execute_test_case(request, test_case_id):
     try:
         test_case = TestCase.objects.get(id=test_case_id)
         test_case.status = 'requested'
+        TestResult.objects.filter(test_case=test_case).delete()
         test_case.save()
-        
+        print("Requesting test case execution", test_case_id)
         request_run_test_case(test_case_id, test_case.content)
         
         return JsonResponse({'error_details': test_case.error_details, 'request_response': test_case.request_response})

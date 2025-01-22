@@ -36,6 +36,7 @@ function initializeCodeEditors() {
                 editor.onDidBlurEditorText(function() {
                     const testCaseId = textarea.id.split('-')[1];
                     autosaveTestCaseContent(testCaseId, editor.getValue());
+                    showToast(`Test case ${testCaseId} content autosaved`, 'info');
                 });
             }
         });
@@ -73,7 +74,7 @@ function generateTestCaseContent(test_case_id) {
             const editor = codeEditors['content-' + test_case_id];
             editor.setValue(data.content);
             addLogMessage(`Generated test case ${test_case_id}`, 'success');
-            toggleDetails(test_case_id); // Auto expand test case details
+            // toggleDetails(test_case_id); // Auto expand test case details
         },
         error: function(xhr) {
             $('#loading').hide();
@@ -135,17 +136,19 @@ function checkTestCaseStatus(test_case_id) {
                         showToast(`Test case ${data.test_case.url} - id: ${test_case_id} executed successfully`, 'success');
                     }
                     updateTestSummary();
-                    toggleDetails(test_case_id);
+                    reloadTestResult(test_case_id);
+                    // toggleDetails(test_case_id);
                 }
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
             }
         });
-    }, 5000);
+    }, 2000);
 }
 
 function updateTestSummary() {
+    const testExecutionId = document.querySelector('[name="test_execution_id"]').value;
     $('#loading').show();
     $.ajax({
         url: "/api_test/api/update_test_summary/",
@@ -215,7 +218,8 @@ function reloadTestResult(test_case_id) {
             $('#loading').hide();
             if (data.test_case.test_result) {
                 updateTestResult(test_case_id, data.test_case.test_result);
-                showToast(`Test result for test case ${test_case_id} reloaded successfully`, 'success');
+                updateTestCaseCardColor(test_case_id, data.test_case.test_result.status); // Change card color based on result
+                // showToast(`Test result for test case ${test_case_id} reloaded successfully`, 'success');
             } else {
                 showToast(`No test result available for test case ${test_case_id}`, 'info');
             }
@@ -226,6 +230,18 @@ function reloadTestResult(test_case_id) {
             showToast(`Failed to reload test result for test case ${test_case_id}: ${errorMessage}`, 'danger');
         }
     });
+}
+
+function updateTestCaseCardColor(test_case_id, status) {
+    const card = document.getElementById('test-case-' + test_case_id+'-card');
+    card.classList.remove('border-light', 'border-success', 'bg-light-success', 'border-danger', 'bg-light-danger', 'border-warning', 'bg-light-warning');
+    if (status === 'passed') {
+        card.classList.add('border-success', 'bg-light-success');
+    } else if (status === 'failed') {
+        card.classList.add('border-danger', 'bg-light-danger');
+    } else {
+        card.classList.add('border-warning', 'bg-light-warning');
+    }
 }
 
 function showToast(message, type = 'success') {

@@ -76,7 +76,7 @@
 <h2 class="mt-3">Test Cases</h2>
 <ul class="list-group mt-2">
     {% for test_case in test_execution.test_cases.all %}
-    <li class="list-group-item border rounded shadow-sm p-2 mb-2 {% if not test_case.test_results.exists %}border-light{% elif test_case.test_results.last.status == 'passed' %}border-success bg-light-success{% elif test_case.test_results.last.status == 'failed' %}border-danger bg-light-danger{% else %}border-warning bg-light-warning{% endif %}">
+    <li id="test-case-{{ test_case.id }}-card" class="list-group-item border rounded shadow-sm p-2 mb-2 {% if not test_case.test_results.exists %}border-light{% elif test_case.test_results.last.status == 'passed' %}border-success bg-light-success{% elif test_case.test_results.last.status == 'failed' %}border-danger bg-light-danger{% else %}border-warning bg-light-warning{% endif %}">
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <p><strong>URL:</strong> {{ test_case.url }}</p>

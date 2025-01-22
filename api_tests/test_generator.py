@@ -139,6 +139,10 @@ def request_run_test_case(test_case_id, content):
     test_case = TestCase.objects.get(id=test_case_id)
     test_case.status = 'executed'
     test_case.save()
+    producer = Producer({'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS})
+    message = json.dumps({'test_id': test_case_id, 'script': test_case.content})
+    producer.produce('test_run_queue', message.encode('utf-8'))
+    producer.flush()
     return {'status': 'executed'}
 
 def generate_report(results):

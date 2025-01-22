@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-xr)&#ov3rr)+td@726lxjrd=s+ump@$bo&ynyl&!6wim7kbtn5'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'storages',
     'canvas',
     'home',
-    'api_tests'
+    'api_tests',
+    'django_prometheus',
 ]
 AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -63,9 +64,9 @@ AUTHENTICATION_BACKENDS = (
 )
 
 LOGIN_URL = '/accounts/google/login/'
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '213239061541-e1flschl3nhpj853uuj93j9hg3nrsblo.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/auth/complete/google/'  # URL callback
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI')
 SITE_ID=2
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
@@ -80,7 +81,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'allauth.account.middleware.AccountMiddleware'
+    'allauth.account.middleware.AccountMiddleware',
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -89,8 +92,8 @@ SOCIALACCOUNT_PROVIDERS = {
             'email'
         ],
         'APP': {
-            'client_id': '213239061541-e1flschl3nhpj853uuj93j9hg3nrsblo.apps.googleusercontent.com',
-            'secret': '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',
+            'client_id': os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY'),
+            'secret': os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET'),
         },
         'AUTH_PARAMS': {
             'access_type':'online',
