@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'home',
     'api_tests',
     'django_prometheus',
+    'canvas.tests',
 ]
 AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',

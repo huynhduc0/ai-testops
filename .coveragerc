@@ -9,7 +9,11 @@ omit =
     */migrations/*       # Skip migrations
     canvas/asgi.py
     canvas/wsgi.py
+    canvas/tests/*
     */tests/*            # Skip test files
+    */*tests.py           # Skip test files
+    temp_test_file.py
+    manage.py
 
 [report]
 exclude_lines =
