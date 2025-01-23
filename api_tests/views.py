@@ -13,6 +13,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.decorators.http import require_POST
+from django.conf import settings
 
 # Page Views
 @login_required
@@ -89,7 +90,7 @@ def test_result_detail(request, test_result_id):
 @login_required
 def generate_test_case_content(request, test_case_id):
     try:
-        llm = GeminiLLM("AIzaSyDey1NPVwZjxaj0F4k286NT4ra0hZNRFRo")
+        llm = GeminiLLM(settings.GEMINI_API_KEY)
         test_case = TestCase.objects.get(id=test_case_id)
         additional_prompt = request.GET.get('additional_prompt', '')
         base_url = test_case.test_execution.base_url
@@ -119,7 +120,7 @@ def execute_tests(request, execution_id):
         test_execution = TestExecution.objects.get(id=execution_id)
         test_cases = test_execution.test_cases.all()
         results = []
-        llm = GeminiLLM("AIzaSyDey1NPVwZjxaj0F4k286NT4ra0hZNRFRo")
+        llm = GeminiLLM(settings.GEMINI_API_KEY)
 
         for test_case in test_cases:
             try:

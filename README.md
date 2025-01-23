@@ -86,6 +86,8 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI=http://localhost:8000/auth/complete/googl
 
 GRAFANA_CLOUD_API_KEY=your_grafana_cloud_api_key
 GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-us-central2.grafana.net/api/prom/push
+
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### Использование
@@ -315,6 +317,8 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI=http://localhost:8000/auth/complete/googl
 
 GRAFANA_CLOUD_API_KEY=your_grafana_cloud_api_key
 GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-us-central2.grafana.net/api/prom/push
+
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### Usage
