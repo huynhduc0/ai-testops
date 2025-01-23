@@ -18,6 +18,11 @@ Check out the full demo of this project on YouTube:
 
 [![Watch the Demo | Смотреть демонстрацию](https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
 
+
+**👉 [Click here to watch the full demo on YouTube](https://www.youtube.com/watch?v=dQw4w9WgXcQ)!**  
+**👉 [Нажмите здесь, чтобы посмотреть полную демонстрацию на YouTube](https://www.youtube.com/watch?v=dQw4w9WgXcQ)!**
+
+
 ## Особенности
 
 - **Создание тестовых скриптов для каждого API на основе Swagger**: Автоматически генерировать тестовые скрипты для каждого конечного API с использованием документации Swagger.
