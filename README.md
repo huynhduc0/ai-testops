@@ -1,172 +1,9 @@
 # AI TestOps Project
 
-## Description (English)
+## Navigation
 
-The AI TestOps project is designed to streamline and automate the testing operations for AI models. This project aims to provide a comprehensive framework for testing, validating, and deploying AI models efficiently. It includes tools and scripts for various testing methodologies, continuous integration, and continuous deployment (CI/CD) pipelines.
-
-## Features
-
-- Automated testing for AI models
-- Continuous integration and deployment
-- Comprehensive test coverage
-- Easy-to-use framework
-- Scalable and flexible architecture
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.8 or higher
-- Docker
-- Git
-
-### Installation
-
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/ai-testops.git
-    ```
-2. Navigate to the project directory:
-    ```bash
-    cd ai-testops
-    ```
-3. Install the required dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-### Setting Up Environment Variables
-
-Create a `.env` file in the root directory of the project and add the following environment variables:
-
-```
-POSTGRES_DB=canvas_db
-POSTGRES_USER=canvas_user
-POSTGRES_PASSWORD=canvas_password
-POSTGRES_HOST=db
-POSTGRES_PORT=5432
-SECRET_KEY=your_secret_key
-KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=your_google_oauth2_key
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=your_google_oauth2_secret
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI=http://localhost:8000/auth/complete/google/
-
-GRAFANA_CLOUD_API_KEY=your_grafana_cloud_api_key
-GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-us-central2.grafana.net/api/prom/push
-```
-
-### Usage
-
-1. Run the tests:
-    ```bash
-    pytest
-    ```
-2. Build and run the Docker container:
-    ```bash
-    docker-compose up --build
-    ```
-
-## How It Works
-
-The AI TestOps project consists of several services that work together to provide a comprehensive testing and deployment framework for AI models:
-
-- **Zookeeper**: Manages and coordinates the Kafka brokers.
-- **Kafka**: A distributed streaming platform used for building real-time data pipelines and streaming applications.
-- **Kafka UI**: A web-based user interface for managing and monitoring Kafka clusters.
-- **PostgreSQL Database**: Stores application data.
-- **Application Service**: The main application that runs the AI model and handles requests.
-- **Test Execute Consumer**: A service that consumes test execution messages from Kafka and processes them.
-- **Grafana Agent**: Collects and sends metrics to Grafana Cloud for monitoring and visualization.
-
-Each service is defined in the `docker-compose.yml` file and can be started using Docker Compose. The services communicate with each other through defined ports and environment variables.
-
-## Screenshots and Functionalities
-
-### Home Screen
-
-![Home Screen](screenshots/home_screen.png)
-
-- **Description**: The home screen provides an overview of the project and quick access to various functionalities.
-- **Functionalities**:
-  - Navigation to different sections of the application.
-  - Overview of recent activities and statistics.
-
-### Test Execution Screen
-
-![Test Execution Screen](screenshots/test_execution_screen.png)
-
-- **Description**: This screen allows users to execute tests and view the results.
-- **Functionalities**:
-  - Execute individual test cases or a suite of tests.
-  - View detailed results of each test execution.
-  - Filter and search test executions.
-
-### Test Case Management Screen
-
-![Test Case Management Screen](screenshots/test_case_management_screen.png)
-
-- **Description**: This screen is used for managing test cases.
-- **Functionalities**:
-  - Create, update, and delete test cases.
-  - Generate test case content automatically.
-  - Save and view test case details.
-
-### Kafka UI Screen
-
-![Kafka UI Screen](screenshots/kafka_ui_screen.png)
-
-- **Description**: The Kafka UI screen provides a web-based interface for managing and monitoring Kafka clusters.
-- **Functionalities**:
-  - View and manage Kafka topics.
-  - Monitor Kafka brokers and their health status.
-  - View real-time metrics and logs.
-
-## watch.py File
-
-The `watch.py` file is responsible for listening to Kafka messages, executing test cases, and collecting metrics.
-
-### How It Works
-
-1. **Listening to Kafka Messages**: The `listen_for_kafka_messages` function sets up a Kafka consumer that listens to the `test_run_queue` topic. When a message is received, it processes the message and executes the test case.
-
-2. **Executing Test Cases**: The `run_test_case` function writes the test script to a temporary file and runs it using `pytest`. The result of the test execution is captured and returned.
-
-3. **Saving Test Results**: The `save_test_result_to_db` function sends the test result to the application service to be saved in the database.
-
-4. **Collecting Metrics**: The `TEST_CASES_STATUS` counter from the Prometheus client library is used to collect metrics on the status of test cases. The metrics are exposed on port 8001 for Grafana to scrape.
-
-### Prometheus Metrics
-
-The following Prometheus metrics are collected:
-
-- `test_cases_status`: A counter that tracks the status of test cases (passed, failed, error) with labels for `test_case_id` and `status`.
-
-## Meeting the Seven Criteria
-
-1. **The project must have a server**: The project includes an application service that runs the AI model and handles requests. This is defined in the `docker-compose.yml` file under the `app` service.
-
-2. **The project must have a consumer**: The `watch.py` file acts as a Kafka consumer that listens for test execution messages, processes them, and collects metrics. This is defined in the `docker-compose.yml` file under the `test-execute-consumer` service.
-
-3. **The service must work with a real DB**: The project uses PostgreSQL as the database to store application data. This is defined in the `docker-compose.yml` file under the `db` service.
-
-4. **Everything should be wrapped in Docker**: The entire system, including custom services, the database, the broker, and monitoring, is wrapped in Docker. The system can be launched locally with one `docker-compose up` command.
-
-5. **Metrics should be collected from the server**: Metrics are collected using the Prometheus client library and exposed on port 8001 for Grafana to scrape. The `grafana-agent` service in the `docker-compose.yml` file handles the collection and sending of metrics to Grafana Cloud.
-
-6. **All code should be covered by tests**: The project includes tests for all code, ensuring 100% coverage. The tests can be run using the `pytest` command.
-
-7. **Test checking is automated via CI**: The project includes a CI pipeline that automates the checking of tests. This ensures that all code changes are tested before being merged.
-
-## Contributing
-
-We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) for more details.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
+- [Russian](#описание-russian)
+- [English](#description-english)
 
 # Проект AI TestOps
 
@@ -174,19 +11,39 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Проект AI TestOps предназначен для упрощения и автоматизации тестовых операций для моделей ИИ. Этот проект направлен на предоставление комплексной структуры для тестирования, валидации и развертывания моделей ИИ. Он включает инструменты и скрипты для различных методологий тестирования, непрерывной интеграции и непрерывного развертывания (CI/CD).
 
+## 🎥 Demo | Демонстрация
+
+Check out the full demo of this project on YouTube:  
+Посмотрите полную демонстрацию этого проекта на YouTube:
+
+[![Watch the Demo | Смотреть демонстрацию](https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+
 ## Особенности
 
-- Автоматизированное тестирование моделей ИИ
+- **Создание тестовых скриптов для каждого API на основе Swagger**: Автоматически генерировать тестовые скрипты для каждого конечного API с использованием документации Swagger.
+- **Выполнение тестовых скриптов**: Запускать сгенерированные тестовые скрипты для проверки функциональности конечных точек API.
+- **Генерация тестовых скриптов с использованием ИИ**: Использовать ИИ для генерации комплексных и эффективных тестовых скриптов для конечных точек API.
 - Непрерывная интеграция и развертывание
 - Полное покрытие тестами
 - Удобная структура
 - Масштабируемая и гибкая архитектура
 
+## Содержание
+
+- [Начало работы](#начало-работы)
+- [Как это работает](#как-это-работает)
+- [Скриншоты и функциональные возможности](#скриншоты-и-функциональные-возможности)
+- [Consumer App](#consumer-app)
+- [Acceptance Criteria](#acceptance-criteria)
+- [Вклад](#вклад)
+- [Лицензия](#лицензия)
+- [🎥 Demo | Демонстрация](#-demo--демонстрация)
+
 ## Начало работы
 
 ### Предварительные требования
 
-- Python 3.8 или выше
+- Python 3.12 или выше
 - Docker
 - Git
 
@@ -194,7 +51,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 1. Клонируйте репозиторий:
     ```bash
-    git clone https://github.com/yourusername/ai-testops.git
+    git clone https://github.com/huynhduc0/ai-testops.git
     ```
 2. Перейдите в каталог проекта:
     ```bash
@@ -255,16 +112,33 @@ GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-us-central2.grafana.net/api/prom
 
 ### Главный экран
 
-![Главный экран](screenshots/home_screen.png)
+![Главный экран](img/mainpage.png)
 
 - **Описание**: Главный экран предоставляет обзор проекта и быстрый доступ к различным функциям.
 - **Функциональные возможности**:
   - Навигация по различным разделам приложения.
   - Обзор последних действий и статистики.
 
+### Страница входа
+
+![Страница входа](img/login_page.png)
+
+- **Описание**: Страница входа позволяет пользователям аутентифицироваться и получить доступ к приложению.
+- **Функциональные возможности**:
+  - Аутентификация пользователей.
+  - Доступ к различным разделам в зависимости от ролей пользователей.
+
+### Список выполнения тестов
+
+![Список выполнения тестов](img/test-exe%20list.png)
+
+- **Описание**: Этот экран отображает список выполнений тестов.
+- **Функциональные возможности**:
+  - Просмотр статуса выполнений тестов.
+
 ### Экран выполнения тестов
 
-![Экран выполнения тестов](screenshots/test_execution_screen.png)
+![Экран выполнения тестов](img/test-case%20info.png)
 
 - **Описание**: Этот экран позволяет пользователям выполнять тесты и просматривать результаты.
 - **Функциональные возможности**:
@@ -272,27 +146,52 @@ GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-us-central2.grafana.net/api/prom
   - Просмотр подробных результатов каждого выполнения теста.
   - Фильтрация и поиск выполнений тестов.
 
-### Экран управления тестовыми случаями
+### Детали результата теста
 
-![Экран управления тестовыми случаями](screenshots/test_case_management_screen.png)
+![Детали результата теста](img/test-result-2.png)
 
-- **Описание**: Этот экран используется для управления тестовыми случаями.
+- **Описание**: Этот экран предоставляет подробную информацию о конкретном результате теста.
 - **Функциональные возможности**:
-  - Создание, обновление и удаление тестовых случаев.
-  - Автоматическая генерация содержимого тестового случая.
-  - Сохранение и просмотр деталей тестового случая.
+  - Просмотр логов и статуса результата теста.
+  - Анализ деталей выполнения теста.
 
-### Экран Kafka UI
+### Редактор кода тестового скрипта
 
-![Экран Kafka UI](screenshots/kafka_ui_screen.png)
+![Редактор кода тестового скрипта](img/test-script%20code%20editor.png)
 
-- **Описание**: Экран Kafka UI предоставляет веб-интерфейс для управления и мониторинга кластеров Kafka.
+- **Описание**: Этот экран предоставляет редактор кода для написания и редактирования тестовых скриптов.
 - **Функциональные возможности**:
-  - Просмотр и управление темами Kafka.
-  - Мониторинг брокеров Kafka и их состояния.
+  - Написание и редактирование тестовых скриптов.
+  - Сохранение и выполнение тестовых скриптов.
+
+### Панель управления приложением Django
+
+![Панель управления приложением Django](img/django_app_dashboard.png)
+
+- **Описание**: Панель управления приложением Django предоставляет обзор статуса и метрик приложения.
+- **Функциональные возможности**:
+  - Мониторинг состояния приложения.
   - Просмотр метрик и логов в реальном времени.
 
-## watch.py файл
+### Пользовательские метрики Grafana
+
+![Пользовательские метрики Grafana](img/grafana%20custom%20metrics.png)
+
+- **Описание**: Панель управления Grafana отображает пользовательские метрики, собранные из приложения.
+- **Функциональные возможности**:
+  - Мониторинг пользовательских метрик.
+  - Анализ производительности приложения.
+
+### Панель управления
+
+![Панель управления](img/dashboard-2.jpeg)
+
+- **Описание**: Панель управления предоставляет комплексный обзор статуса и метрик проекта.
+- **Функциональные возможности**:
+  - Мониторинг состояния проекта.
+  - Просмотр метрик и логов в реальном времени.
+
+## Consumer App
 
 Файл `watch.py` отвечает за прослушивание сообщений Kafka, выполнение тестовых случаев и сбор метрик.
 
@@ -312,7 +211,7 @@ GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-us-central2.grafana.net/api/prom
 
 - `test_cases_status`: Счетчик, отслеживающий статус тестовых случаев (пройдено, не пройдено, ошибка) с метками для `test_case_id` и `status`.
 
-## Соответствие семи критериям
+## Acceptance Criteria
 
 1. **Проект должен иметь сервер**: Проект включает сервис приложения, который запускает модель ИИ и обрабатывает запросы. Это определено в файле `docker-compose.yml` в разделе `app`.
 
@@ -335,3 +234,232 @@ GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-us-central2.grafana.net/api/prom
 ## Лицензия
 
 Этот проект лицензирован по лицензии MIT - см. файл [LICENSE](LICENSE) для получения подробной информации.
+
+## 🎥 Demo | Демонстрация
+
+Check out the full demo of this project on YouTube:  
+Посмотрите полную демонстрацию этого проекта на YouTube:
+
+[![Watch the Demo | Смотреть демонстрацию](https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+
+---
+
+## Description (English)
+
+The AI TestOps project is designed to streamline and automate the testing operations for AI models. This project aims to provide a comprehensive framework for testing, validating, and deploying AI models efficiently. It includes tools and scripts for various testing methodologies, continuous integration, and continuous deployment (CI/CD) pipelines.
+
+## Features
+
+- **Create Test Scripts for Each API Based on Swagger**: Automatically generate test scripts for each API endpoint using the Swagger documentation.
+- **Execute Test Scripts**: Run the generated test scripts to validate the functionality of the API endpoints.
+- **Generate Test Scripts Using AI**: Utilize AI to generate comprehensive and effective test scripts for API endpoints.
+- Continuous integration and deployment
+- Comprehensive test coverage
+- Easy-to-use framework
+- Scalable and flexible architecture
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [How It Works](#how-it-works)
+- [Screenshots and Functionalities](#screenshots-and-functionalities)
+- [Consumer App](#consumer-app)
+- [Acceptance Criteria](#acceptance-criteria)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.12 or higher
+- Docker
+- Git
+
+### Installation
+
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/huynhduc0/ai-testops.git
+    ```
+2. Navigate to the project directory:
+    ```bash
+    cd ai-testops
+    ```
+3. Install the required dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Setting Up Environment Variables
+
+Create a `.env` file in the root directory of the project and add the following environment variables:
+
+```
+POSTGRES_DB=canvas_db
+POSTGRES_USER=canvas_user
+POSTGRES_PASSWORD=canvas_password
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+SECRET_KEY=your_secret_key
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=your_google_oauth2_key
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=your_google_oauth2_secret
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI=http://localhost:8000/auth/complete/google/
+
+GRAFANA_CLOUD_API_KEY=your_grafana_cloud_api_key
+GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-us-central2.grafana.net/api/prom/push
+```
+
+### Usage
+
+1. Run the tests:
+    ```bash
+    pytest
+    ```
+2. Build and run the Docker container:
+    ```bash
+    docker-compose up --build
+    ```
+
+## How It Works
+
+The AI TestOps project consists of several services that work together to provide a comprehensive testing and deployment framework for AI models:
+
+- **Zookeeper**: Manages and coordinates the Kafka brokers.
+- **Kafka**: A distributed streaming platform used for building real-time data pipelines and streaming applications.
+- **Kafka UI**: A web-based user interface for managing and monitoring Kafka clusters.
+- **PostgreSQL Database**: Stores application data.
+- **Application Service**: The main application that runs the AI model and handles requests.
+- **Test Execute Consumer**: A service that consumes test execution messages from Kafka and processes them.
+- **Grafana Agent**: Collects and sends metrics to Grafana Cloud for monitoring and visualization.
+
+Each service is defined in the `docker-compose.yml` file and can be started using Docker Compose. The services communicate with each other through defined ports and environment variables.
+
+## Screenshots and Functionalities
+
+### Home Screen
+
+![Home Screen](img/mainpage.png)
+
+- **Description**: The home allow add swagger url to create test suit.
+- **Functionalities**:
+  - Navigation to different sections of the application.
+  - Overview of recent activities and statistics.
+
+### Login Page
+
+![Login Page](img/login_page.png)
+
+- **Description**: The login page allows users to authenticate and access the application.
+- **Functionalities**:
+  - User authentication.
+  - Access to different sections based on user roles.
+
+### Test Execution List
+
+![Test Execution List](img/test-exe%20list.png)
+
+- **Description**: This screen displays a list of test executions.
+- **Functionalities**:
+  - View the status of test executions.
+
+### Test Execution Screen
+
+![Test Execution Screen](img/test-case%20info.png)
+
+- **Description**: This screen allows users to execute tests and view the results.
+- **Functionalities**:
+  - Execute individual test cases or a suite of tests.
+  - View detailed results of each test execution.
+  - Filter and search test executions.
+
+### Test Result Detail
+
+![Test Result Detail](img/test-result-2.png)
+
+- **Description**: This screen provides detailed information about a specific test result.
+- **Functionalities**:
+  - View logs and status of the test result.
+  - Analyze test execution details.
+
+### Test Script Code Editor
+
+![Test Script Code Editor](img/test-script%20code%20editor.png)
+
+- **Description**: This screen provides a code editor for writing and editing test scripts.
+- **Functionalities**:
+  - Write and edit test scripts.
+  - Save and execute test scripts.
+
+### Django App Dashboard
+
+![Django App Dashboard](img/django_app_dashboard.png)
+
+- **Description**: The Django app dashboard provides an overview of the application's status and metrics.
+- **Functionalities**:
+  - Monitor application health.
+  - View real-time metrics and logs.
+
+### Grafana Custom Metrics
+
+![Grafana Custom Metrics](img/grafana%20custom%20metrics.png)
+
+- **Description**: The Grafana dashboard displays custom metrics collected from the application.
+- **Functionalities**:
+  - Monitor custom metrics.
+  - Analyze application performance.
+
+### Dashboard
+
+![Dashboard](img/dashboard-2.jpeg)
+
+- **Description**: The dashboard provides a comprehensive view of the project's status and metrics.
+- **Functionalities**:
+  - Monitor project health.
+  - View real-time metrics and logs.
+
+## Consumer App
+
+The `watch.py` file is responsible for listening to Kafka messages, executing test cases, and collecting metrics.
+
+### How It Works
+
+1. **Listening to Kafka Messages**: The `listen_for_kafka_messages` function sets up a Kafka consumer that listens to the `test_run_queue` topic. When a message is received, it processes the message and executes the test case.
+
+2. **Executing Test Cases**: The `run_test_case` function writes the test script to a temporary file and runs it using `pytest`. The result of the test execution is captured and returned.
+
+3. **Saving Test Results**: The `save_test_result_to_db` function sends the test result to the application service to be saved in the database.
+
+4. **Collecting Metrics**: The `TEST_CASES_STATUS` counter from the Prometheus client library is used to collect metrics on the status of test cases. The metrics are exposed on port 8001 for Grafana to scrape.
+
+### Prometheus Metrics
+
+The following Prometheus metrics are collected:
+
+- `test_cases_status`: A counter that tracks the status of test cases (passed, failed, error) with labels for `test_case_id` and `status`.
+
+## Acceptance Criteria
+
+1. **The project must have a server**: The project includes an application service that runs the AI model and handles requests. This is defined in the `docker-compose.yml` file under the `app` service.
+
+2. **The project must have a consumer**: The `watch.py` file acts as a Kafka consumer that listens for test execution messages, processes them, and collects metrics. This is defined in the `docker-compose.yml` file under the `test-execute-consumer` service.
+
+3. **The service must work with a real DB**: The project uses PostgreSQL as the database to store application data. This is defined in the `docker-compose.yml` file under the `db` service.
+
+4. **Everything should be wrapped in Docker**: The entire system, including custom services, the database, the broker, and monitoring, is wrapped in Docker. The system can be launched locally with one `docker-compose up` command.
+
+5. **Metrics should be collected from the server**: Metrics are collected using the Prometheus client library and exposed on port 8001 for Grafana to scrape. The `grafana-agent` service in the `docker-compose.yml` file handles the collection and sending of metrics to Grafana Cloud.
+
+6. **All code should be covered by tests**: The project includes tests for all code, ensuring 100% coverage. The tests can be run using the `pytest` command.
+
+7. **Test checking is automated via CI**: The project includes a CI pipeline that automates the checking of tests. This ensures that all code changes are tested before being merged.
+
+## Contributing
+
+We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) for more details.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
