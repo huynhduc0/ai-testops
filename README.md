@@ -16,7 +16,7 @@
 Check out the full demo of this project on YouTube:  
 Посмотрите полную демонстрацию этого проекта на YouTube:
 
-[![Watch the Demo | Смотреть демонстрацию](https://img.youtube.com/vi/tNE39IoXOoc/maxresdefault.jpg)](https://www.youtube.com/watch?v=tNE39IoXOoc)
+[![Watch the Demo | Смотреть демонстрацию] (https://img.youtube.com/vi/tNE39IoXOoc/maxresdefault.jpg)](https://www.youtube.com/watch?v=tNE39IoXOoc)
 
 
 **👉 [Click here to watch the full demo on YouTube](https://www.youtube.com/watch?v=tNE39IoXOoc)!**  
