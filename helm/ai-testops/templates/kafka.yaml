@@ -44,29 +44,18 @@ spec:
       - name: kafka
         image: "{{ .Values.kafka.image.repository }}:{{ .Values.kafka.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - sh
+          - -c
+          - |
+            CLUSTER_ID="$(bin/kafka-storage.sh random-uuid)"
+            bin/kafka-storage.sh format -t $CLUSTER_ID -c /etc/kafka/server.properties
+            bin/kafka-server-start.sh /etc/kafka/server.properties --override process.roles=broker,controller --override node.id=1 --override controller.quorum.voters=1@localhost:9093 --override listeners=PLAINTEXT://:{{ .Values.kafka.service.port }},CONTROLLER://:9093 --override advertised.listeners=PLAINTEXT://{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }} --override controller.listener.names=CONTROLLER --override listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT --override log.dirs=/tmp/kraft-combined-logs --override offsets.topic.replication.factor={{ .Values.kafka.config.replicationFactor }} --override transaction.state.log.replication.factor={{ .Values.kafka.config.replicationFactor }} --override transaction.state.log.min.isr=1
         ports:
         - containerPort: {{ .Values.kafka.service.port }}
-        env:
-        - name: KAFKA_BROKER_ID
-          value: {{ .Values.kafka.config.brokerId | quote }}
-        - name: KAFKA_ZOOKEEPER_CONNECT
-          value: "{{ .Values.zookeeper.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.zookeeper.service.port }}"
-        - name: KAFKA_ADVERTISED_HOST_NAME
-          value: "{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local"
-        - name: KAFKA_ADVERTISED_PORT
-          value: {{ .Values.kafka.service.port | quote }}
-        - name: KAFKA_PORT
-          value: {{ .Values.kafka.service.port | quote }}
-        - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
-          value: {{ .Values.kafka.config.replicationFactor | quote }}
-        - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
-          value: {{ .Values.kafka.config.replicationFactor | quote }}
-        - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
-          value: "1"
-        - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
-          value: "true"
-        - name: KAFKA_LOG_DIRS
-          value: "/kafka/kafka-logs"
+          name: kafka
+        - containerPort: 9093
+          name: controller
         resources:
           {{- toYaml .Values.kafka.resources | nindent 10 }}
         {{- if .Values.kafka.persistence.enabled }}

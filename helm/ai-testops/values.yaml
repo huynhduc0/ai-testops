@@ -85,8 +85,8 @@ postgres:
 kafka:
   name: kafka
   image:
-    repository: wurstmeister/kafka
-    tag: "2.13-2.8.1"
+    repository: apache/kafka
+    tag: "3.6.1"
   service:
     type: ClusterIP
     port: 9092
@@ -105,9 +105,9 @@ kafka:
       memory: "1Gi"
       cpu: "1000m"
 
-# Zookeeper
+# Zookeeper (disabled - using Kafka KRaft mode)
 zookeeper:
-  enabled: true
+  enabled: false
   name: zookeeper
   image:
     repository: wurstmeister/zookeeper
