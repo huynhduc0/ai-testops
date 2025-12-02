@@ -1,3 +1,4 @@
+{{- if .Values.zookeeper.enabled }}
 {{- if .Values.zookeeper.persistence.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -94,3 +95,4 @@ spec:
     targetPort: {{ .Values.zookeeper.service.port }}
   selector:
     app: {{ .Values.zookeeper.name }}
+{{- end }}

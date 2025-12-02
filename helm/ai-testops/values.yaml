@@ -86,7 +86,7 @@ kafka:
   name: kafka
   image:
     repository: bitnami/kafka
-    tag: "3.6"
+    tag: "3.6.0"
   service:
     type: ClusterIP
     port: 9092
@@ -105,8 +105,9 @@ kafka:
       memory: "1Gi"
       cpu: "1000m"
 
-# Zookeeper
+# Zookeeper (disabled when using Kafka KRaft mode)
 zookeeper:
+  enabled: false
   name: zookeeper
   image:
     repository: bitnami/zookeeper
