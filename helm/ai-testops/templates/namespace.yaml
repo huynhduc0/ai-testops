@@ -5,3 +5,5 @@ metadata:
   labels:
     name: {{ .Values.namespace }}
     {{- include "ai-testops.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
