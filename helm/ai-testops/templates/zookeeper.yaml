@@ -47,14 +47,14 @@ spec:
         ports:
         - containerPort: {{ .Values.zookeeper.service.port }}
         env:
-        - name: ZOOKEEPER_CLIENT_PORT
+        - name: ALLOW_ANONYMOUS_LOGIN
+          value: "yes"
+        - name: ZOO_PORT_NUMBER
           value: {{ .Values.zookeeper.config.clientPort | quote }}
-        - name: ZOOKEEPER_TICK_TIME
+        - name: ZOO_TICK_TIME
           value: {{ .Values.zookeeper.config.tickTime | quote }}
-        - name: ZOOKEEPER_SERVER_ID
-          value: "1"
-        - name: ZOOKEEPER_SERVERS
-          value: "server.1=localhost:2888:3888"
+        - name: ZOO_ENABLE_AUTH
+          value: "no"
         resources:
           {{- toYaml .Values.zookeeper.resources | nindent 10 }}
         {{- if .Values.zookeeper.persistence.enabled }}
