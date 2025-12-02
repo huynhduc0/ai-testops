@@ -50,7 +50,7 @@ consumer:
       memory: "512Mi"
       cpu: "500m"
   autoscaling:
-    enabled: true
+    enabled: false  # Disable HPA for consumer - scale based on Kafka lag instead
     minReplicas: 2
     maxReplicas: 8
     targetCPUUtilizationPercentage: 70
