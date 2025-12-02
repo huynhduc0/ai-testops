@@ -67,7 +67,7 @@ postgres:
   persistence:
     enabled: true
     size: 5Gi
-    storageClass: ""
+    storageClass: "standard"  # Use 'standard' for Minikube/local, empty "" for default SC
   config:
     database: canvas_db
   credentials:
@@ -93,7 +93,7 @@ kafka:
   persistence:
     enabled: true
     size: 10Gi
-    storageClass: ""
+    storageClass: "standard"  # Use 'standard' for Minikube/local, empty "" for default SC
   config:
     brokerId: 1
     replicationFactor: 1
@@ -117,7 +117,7 @@ zookeeper:
   persistence:
     enabled: true
     size: 2Gi
-    storageClass: ""
+    storageClass: "standard"  # Use 'standard' for Minikube/local, empty "" for default SC
   config:
     clientPort: 2181
     tickTime: 2000
