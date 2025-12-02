@@ -4,6 +4,8 @@ kind: NetworkPolicy
 metadata:
   name: django-app-netpol
   namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   podSelector:
     matchLabels:

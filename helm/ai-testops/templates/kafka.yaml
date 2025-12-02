@@ -8,7 +8,7 @@ metadata:
     app: {{ .Values.kafka.name }}
     {{- include "ai-testops.labels" . | nindent 4 }}
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   accessModes:
     - ReadWriteOnce
