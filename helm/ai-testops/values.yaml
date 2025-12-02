@@ -152,26 +152,21 @@ ingress:
   enabled: true
   className: nginx
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
   hosts:
-    - host: ai-testops.example.com
+    - host: testops.thduc.tech
       paths:
         - path: /
           pathType: Prefix
           service: django-app
           port: 8000
-    - host: kafka-ui.ai-testops.example.com
+    - host: kafka-ui.testops.thduc.tech
       paths:
         - path: /
           pathType: Prefix
           service: kafka-ui
           port: 8080
-  tls:
-    - secretName: ai-testops-tls
-      hosts:
-        - ai-testops.example.com
-        - kafka-ui.ai-testops.example.com
+  tls: []
 
 # Security
 rbac:
