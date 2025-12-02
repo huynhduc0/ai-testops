@@ -53,10 +53,20 @@ spec:
           value: "{{ .Values.zookeeper.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.zookeeper.service.port }}"
         - name: KAFKA_ADVERTISED_LISTENERS
           value: "PLAINTEXT://{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }}"
+        - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+          value: "PLAINTEXT:PLAINTEXT"
+        - name: KAFKA_INTER_BROKER_LISTENER_NAME
+          value: "PLAINTEXT"
         - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
           value: {{ .Values.kafka.config.replicationFactor | quote }}
+        - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+          value: {{ .Values.kafka.config.replicationFactor | quote }}
+        - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+          value: "1"
         - name: KAFKA_LOG_DIRS
           value: "/var/lib/kafka/data"
+        - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+          value: "true"
         resources:
           {{- toYaml .Values.kafka.resources | nindent 10 }}
         {{- if .Values.kafka.persistence.enabled }}

@@ -51,6 +51,10 @@ spec:
           value: {{ .Values.zookeeper.config.clientPort | quote }}
         - name: ZOOKEEPER_TICK_TIME
           value: {{ .Values.zookeeper.config.tickTime | quote }}
+        - name: ZOOKEEPER_SERVER_ID
+          value: "1"
+        - name: ZOOKEEPER_SERVERS
+          value: "server.1=localhost:2888:3888"
         resources:
           {{- toYaml .Values.zookeeper.resources | nindent 10 }}
         {{- if .Values.zookeeper.persistence.enabled }}
