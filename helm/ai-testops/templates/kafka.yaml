@@ -48,9 +48,9 @@ spec:
           - sh
           - -c
           - |
-            CLUSTER_ID="$(bin/kafka-storage.sh random-uuid)"
-            bin/kafka-storage.sh format -t $CLUSTER_ID -c /etc/kafka/server.properties
-            bin/kafka-server-start.sh /etc/kafka/server.properties --override process.roles=broker,controller --override node.id=1 --override controller.quorum.voters=1@localhost:9093 --override listeners=PLAINTEXT://:{{ .Values.kafka.service.port }},CONTROLLER://:9093 --override advertised.listeners=PLAINTEXT://{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }} --override controller.listener.names=CONTROLLER --override listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT --override log.dirs=/tmp/kraft-combined-logs --override offsets.topic.replication.factor={{ .Values.kafka.config.replicationFactor }} --override transaction.state.log.replication.factor={{ .Values.kafka.config.replicationFactor }} --override transaction.state.log.min.isr=1
+            CLUSTER_ID="$(/opt/kafka/bin/kafka-storage.sh random-uuid)"
+            /opt/kafka/bin/kafka-storage.sh format -t $CLUSTER_ID -c /opt/kafka/config/kraft/server.properties
+            /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/server.properties --override process.roles=broker,controller --override node.id=1 --override controller.quorum.voters=1@localhost:9093 --override listeners=PLAINTEXT://:{{ .Values.kafka.service.port }},CONTROLLER://:9093 --override advertised.listeners=PLAINTEXT://{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }} --override controller.listener.names=CONTROLLER --override listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT --override log.dirs=/tmp/kraft-combined-logs --override offsets.topic.replication.factor={{ .Values.kafka.config.replicationFactor }} --override transaction.state.log.replication.factor={{ .Values.kafka.config.replicationFactor }} --override transaction.state.log.min.isr=1
         ports:
         - containerPort: {{ .Values.kafka.service.port }}
           name: kafka
