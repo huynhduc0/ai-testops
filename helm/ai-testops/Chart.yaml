@@ -1,0 +1,14 @@
+apiVersion: v2
+name: ai-testops
+description: A Helm chart for AI TestOps distributed system
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - ai
+  - testing
+  - kafka
+  - microservices
+maintainers:
+  - name: AI TestOps Team
+    email: team@ai-testops.example.com

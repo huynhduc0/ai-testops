@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.djangoApp.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.djangoApp.name }}
+    {{- include "ai-testops.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.djangoApp.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.djangoApp.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.djangoApp.name }}
+        version: v1
+    spec:
+      serviceAccountName: django-app-sa
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z {{ .Values.postgres.name }}.{{ .Values.namespace }}.svc.cluster.local {{ .Values.postgres.service.port }}; do echo waiting for postgres; sleep 2; done;']
+      - name: wait-for-kafka
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z {{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local {{ .Values.kafka.service.port }}; do echo waiting for kafka; sleep 2; done;']
+      containers:
+      - name: django-app
+        image: "{{ .Values.djangoApp.image.repository }}:{{ .Values.djangoApp.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: 
+        - sh
+        - -c
+        - |
+          python manage.py makemigrations
+          python manage.py migrate
+          python manage.py runserver 0.0.0.0:8000
+        ports:
+        - containerPort: {{ .Values.djangoApp.service.port }}
+          name: http
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: postgres-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: POSTGRES_HOST
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: POSTGRES_PORT
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: KAFKA_BOOTSTRAP_SERVERS
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys-secret
+              key: GEMINI_API_KEY
+        resources:
+          {{- toYaml .Values.djangoApp.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.djangoApp.service.port }}
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.djangoApp.service.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.djangoApp.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.djangoApp.name }}
+    {{- include "ai-testops.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.djangoApp.service.type }}
+  ports:
+  - port: {{ .Values.djangoApp.service.port }}
+    targetPort: {{ .Values.djangoApp.service.port }}
+    name: http
+  selector:
+    app: {{ .Values.djangoApp.name }}

@@ -1,0 +1,66 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Workflow
+metadata:
+  name: comprehensive-chaos-test
+  namespace: ai-testops
+spec:
+  entry: entry
+  templates:
+    - name: entry
+      templateType: Serial
+      deadline: 15m
+      children:
+        - pod-failure-test
+        - network-delay-test
+        - cpu-stress-test
+        - recovery-validation
+    
+    - name: pod-failure-test
+      templateType: PodChaos
+      deadline: 2m
+      podChaos:
+        action: pod-kill
+        mode: one
+        selector:
+          namespaces:
+            - ai-testops
+          labelSelectors:
+            app: django-app
+    
+    - name: network-delay-test
+      templateType: NetworkChaos
+      deadline: 3m
+      networkChaos:
+        action: delay
+        mode: all
+        selector:
+          namespaces:
+            - ai-testops
+          labelSelectors:
+            app: kafka
+        delay:
+          latency: "100ms"
+          jitter: "10ms"
+        direction: both
+    
+    - name: cpu-stress-test
+      templateType: StressChaos
+      deadline: 3m
+      stressChaos:
+        mode: fixed
+        value: "1"
+        selector:
+          namespaces:
+            - ai-testops
+          labelSelectors:
+            app: test-execute-consumer
+        stressors:
+          cpu:
+            workers: 2
+            load: 80
+    
+    - name: recovery-validation
+      templateType: Suspend
+      deadline: 2m
+      suspend:
+        duration: 2m

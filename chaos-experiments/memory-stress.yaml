@@ -1,0 +1,35 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: memory-stress-django
+  namespace: ai-testops
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - ai-testops
+    labelSelectors:
+      app: django-app
+  stressors:
+    memory:
+      workers: 2
+      size: "512Mi"
+  duration: "2m"
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: memory-stress-postgres
+  namespace: ai-testops
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - ai-testops
+    labelSelectors:
+      app: postgres
+  stressors:
+    memory:
+      workers: 1
+      size: "256Mi"
+  duration: "1m"

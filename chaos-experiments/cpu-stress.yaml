@@ -1,0 +1,38 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: cpu-stress-django
+  namespace: ai-testops
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - ai-testops
+    labelSelectors:
+      app: django-app
+  stressors:
+    cpu:
+      workers: 2
+      load: 80
+  duration: "3m"
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: cpu-stress-consumer
+  namespace: ai-testops
+spec:
+  mode: fixed
+  value: "1"
+  selector:
+    namespaces:
+      - ai-testops
+    labelSelectors:
+      app: test-execute-consumer
+  stressors:
+    cpu:
+      workers: 1
+      load: 90
+  duration: "2m"
+  scheduler:
+    cron: "@every 10m"

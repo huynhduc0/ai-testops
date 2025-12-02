@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.consumer.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.consumer.name }}
+    {{- include "ai-testops.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.consumer.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.consumer.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.consumer.name }}
+        version: v1
+    spec:
+      serviceAccountName: consumer-sa
+      initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z {{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local {{ .Values.kafka.service.port }}; do echo waiting for kafka; sleep 2; done;']
+      containers:
+      - name: consumer
+        image: "{{ .Values.consumer.image.repository }}:{{ .Values.consumer.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["python", "watch.py"]
+        env:
+        - name: KAFKA_BROKER
+          value: "{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }}"
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }}"
+        resources:
+          {{- toYaml .Values.consumer.resources | nindent 10 }}
+        livenessProbe:
+          exec:
+            command:
+            - pgrep
+            - -f
+            - python
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pgrep
+            - -f
+            - python
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.consumer.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.consumer.name }}
+    {{- include "ai-testops.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.consumer.service.type }}
+  ports:
+  - port: {{ .Values.consumer.service.port }}
+    targetPort: {{ .Values.consumer.service.port }}
+  selector:
+    app: {{ .Values.consumer.name }}

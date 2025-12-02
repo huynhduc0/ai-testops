@@ -1,0 +1,88 @@
+{{- if .Values.zookeeper.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zookeeper-pvc
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.zookeeper.name }}
+    {{- include "ai-testops.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.zookeeper.persistence.storageClass }}
+  storageClassName: {{ .Values.zookeeper.persistence.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.zookeeper.persistence.size }}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.zookeeper.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.zookeeper.name }}
+    {{- include "ai-testops.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.zookeeper.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.zookeeper.name }}
+    spec:
+      containers:
+      - name: zookeeper
+        image: "{{ .Values.zookeeper.image.repository }}:{{ .Values.zookeeper.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.zookeeper.service.port }}
+        env:
+        - name: ZOOKEEPER_CLIENT_PORT
+          value: {{ .Values.zookeeper.config.clientPort | quote }}
+        - name: ZOOKEEPER_TICK_TIME
+          value: {{ .Values.zookeeper.config.tickTime | quote }}
+        resources:
+          {{- toYaml .Values.zookeeper.resources | nindent 10 }}
+        {{- if .Values.zookeeper.persistence.enabled }}
+        volumeMounts:
+        - name: zookeeper-storage
+          mountPath: /var/lib/zookeeper
+        {{- end }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.zookeeper.service.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.zookeeper.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      {{- if .Values.zookeeper.persistence.enabled }}
+      volumes:
+      - name: zookeeper-storage
+        persistentVolumeClaim:
+          claimName: zookeeper-pvc
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.zookeeper.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.zookeeper.name }}
+    {{- include "ai-testops.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.zookeeper.service.type }}
+  ports:
+  - port: {{ .Values.zookeeper.service.port }}
+    targetPort: {{ .Values.zookeeper.service.port }}
+  selector:
+    app: {{ .Values.zookeeper.name }}
