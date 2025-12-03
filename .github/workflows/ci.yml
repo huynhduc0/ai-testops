@@ -28,7 +28,7 @@ jobs:
     - name: Generate version tag
       id: version
       run: |
-        VERSION=$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}
+        VERSION=${GITHUB_SHA::7}
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         echo "Generated version: $VERSION"
     
@@ -56,7 +56,8 @@ jobs:
     
     - name: Update image tags in values.yaml
       run: |
-        sed -i "s|tag:.*|tag: ${{ steps.version.outputs.VERSION }}|" helm/ai-testops/values.yaml
+        sed -i "/djangoApp:/,/service:/ s|tag:.*|tag: ${{ steps.version.outputs.VERSION }}|" helm/ai-testops/values.yaml
+        sed -i "/consumer:/,/service:/ s|tag:.*|tag: ${{ steps.version.outputs.VERSION }}|" helm/ai-testops/values.yaml
         
     - name: Commit and push changes
       if: github.ref == 'refs/heads/main'
