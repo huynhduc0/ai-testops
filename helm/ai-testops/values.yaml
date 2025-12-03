@@ -140,7 +140,7 @@ kafkaUI:
   enabled: true
   image:
     repository: provectuslabs/kafka-ui
-    tag: 20251203-084211-4900490
+    tag: "latest"
   service:
     type: ClusterIP
     port: 8080
