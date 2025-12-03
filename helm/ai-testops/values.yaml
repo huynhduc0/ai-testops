@@ -8,6 +8,10 @@ image:
   pullPolicy: Always
   registry: docker.io
 
+# Django settings
+django:
+  secretKey: "django-insecure-change-this-in-production-k8s-secret-key-12345"
+
 # Django Application
 djangoApp:
   name: django-app
@@ -179,4 +183,11 @@ networkPolicies:
 # Secrets (these should be overridden via values override or sealed secrets)
 secrets:
   geminiApiKey: "YOUR_GEMINI_API_KEY_HERE"
-  grafanaCloudApiKey: "YOUR_GRAFANA_CLOUD_API_KEY_HERE"
+  googleOauth2Key: ""
+  googleOauth2Secret: ""
+  grafanaCloudApiKey: ""
+
+# Monitoring (optional)
+monitoring:
+  grafana:
+    prometheusUrl: ""

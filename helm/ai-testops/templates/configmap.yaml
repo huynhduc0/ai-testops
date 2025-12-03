@@ -21,3 +21,7 @@ data:
   POSTGRES_HOST: "{{ .Values.postgres.name }}.{{ .Values.namespace }}.svc.cluster.local"
   POSTGRES_PORT: {{ .Values.postgres.service.port | quote }}
   KAFKA_BOOTSTRAP_SERVERS: "{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }}"
+  KAFKA_TOPIC: "test_run_queue"
+  SECRET_KEY: {{ .Values.django.secretKey | quote }}
+  SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI: "https://{{ (index .Values.ingress.hosts 0).host }}/auth/complete/google/"
+  GRAFANA_CLOUD_PROMETHEUS_URL: {{ .Values.monitoring.grafana.prometheusUrl | default "" | quote }}
