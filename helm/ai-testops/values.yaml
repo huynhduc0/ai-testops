@@ -13,7 +13,7 @@ djangoApp:
   name: django-app
   replicaCount: 2
   image:
-    repository: huynhduc0/ai-testops
+    repository: vanlahuynhduc/ai-testops
     tag: dcc1c90
   service:
     type: ClusterIP
@@ -37,7 +37,7 @@ consumer:
   name: test-execute-consumer
   replicaCount: 2
   image:
-    repository: huynhduc0/ai-testops-consumer
+    repository: vanlahuynhduc/ai-testops-consumer
     tag: dcc1c90
   service:
     type: ClusterIP
