@@ -12,6 +12,9 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.PAT_TOKEN }}
+        fetch-depth: 0
       
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -67,10 +70,10 @@ jobs:
         fi
         git commit -m "chore: update image tags to ${{ steps.version.outputs.VERSION }}"
         git pull --rebase
-        git push https://${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+        git push origin main
     
     - name: Create and push Git tag
       if: github.ref == 'refs/heads/main'
       run: |
         git tag -a "v${{ steps.version.outputs.VERSION }}" -m "Release v${{ steps.version.outputs.VERSION }}"
-        git push https://${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git "v${{ steps.version.outputs.VERSION }}"
+        git push origin "v${{ steps.version.outputs.VERSION }}"
