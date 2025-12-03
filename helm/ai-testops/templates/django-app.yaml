@@ -102,6 +102,16 @@ spec:
             configMapKeyRef:
               name: app-config
               key: GRAFANA_CLOUD_PROMETHEUS_URL
+        - name: ALLOWED_HOSTS
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: ALLOWED_HOSTS
+        - name: CSRF_TRUSTED_ORIGINS
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: CSRF_TRUSTED_ORIGINS
         - name: GEMINI_API_KEY
           valueFrom:
             secretKeyRef:

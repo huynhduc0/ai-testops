@@ -23,5 +23,7 @@ data:
   KAFKA_BOOTSTRAP_SERVERS: "{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }}"
   KAFKA_TOPIC: "test_run_queue"
   SECRET_KEY: {{ .Values.django.secretKey | quote }}
+  ALLOWED_HOSTS: "{{ (index .Values.ingress.hosts 0).host }},localhost,127.0.0.1"
+  CSRF_TRUSTED_ORIGINS: "https://{{ (index .Values.ingress.hosts 0).host }}"
   SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI: "https://{{ (index .Values.ingress.hosts 0).host }}/auth/complete/google/"
   GRAFANA_CLOUD_PROMETHEUS_URL: {{ .Values.monitoring.grafana.prometheusUrl | default "" | quote }}
