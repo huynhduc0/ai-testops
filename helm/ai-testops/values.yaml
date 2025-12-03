@@ -11,10 +11,10 @@ image:
 # Django Application
 djangoApp:
   name: django-app
-  replicaCount: 2
+  replicaCount: 1
   image:
     repository: vanlahuynhduc/ai-testops
-    tag: 3031222
+    tag: "dcc1c90"
   service:
     type: ClusterIP
     port: 8000
@@ -35,10 +35,10 @@ djangoApp:
 # Test Execute Consumer
 consumer:
   name: test-execute-consumer
-  replicaCount: 2
+  replicaCount: 1
   image:
     repository: vanlahuynhduc/ai-testops-consumer
-    tag: 3031222
+    tag: "dcc1c90"
   service:
     type: ClusterIP
     port: 8080
