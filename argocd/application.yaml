@@ -17,11 +17,11 @@ spec:
         - values.yaml
       parameters:
         - name: namespace
-          value: ai-testops
+          value: testops
   
   destination:
     server: https://kubernetes.default.svc
-    namespace: ai-testops
+    namespace: testops
   
   syncPolicy:
     automated:

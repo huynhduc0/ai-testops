@@ -1,74 +1,61 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  run-test:
+  build-and-push:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_USER: canvas_user
-          POSTGRES_PASSWORD: canvas_password
-          POSTGRES_DB: canvas_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+    
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/checkout@v3
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+      
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
       with:
-        python-version: '3.12'
-
-    - name: Install dependencies
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Generate version tag
+      id: version
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Run migrations
+        VERSION=$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Generated version: $VERSION"
+    
+    - name: Build and push Django app image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/ai-testops:${{ steps.version.outputs.VERSION }}
+          ${{ secrets.DOCKER_USERNAME }}/ai-testops:latest
+        platforms: linux/amd64,linux/arm64
+    
+    - name: Build and push Consumer image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./test-execute-consumer
+        file: ./test-execute-consumer/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/ai-testops-consumer:${{ steps.version.outputs.VERSION }}
+          ${{ secrets.DOCKER_USERNAME }}/ai-testops-consumer:latest
+        platforms: linux/amd64,linux/arm64
+    
+    - name: Create Git tag
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git tag -a "v${{ steps.version.outputs.VERSION }}" -m "Release v${{ steps.version.outputs.VERSION }}"
+        git push origin "v${{ steps.version.outputs.VERSION }}"
       env:
-        DATABASE_URL: postgres://canvas_user:canvas_password@localhost:5432/canvas_db
-      run: |
-        python manage.py migrate
-
-    - name: Run tests
-      env:
-        DATABASE_URL: postgres://canvas_user:canvas_password@localhost:5432/canvas_db
-      run: |
-        coverage run manage.py test
-
-    - name: Generate code coverage report
-      run: |
-        coverage report
-        coverage xml
-        coverage html
-        coverage report | grep 'TOTAL' | awk '{print "Coverage: " $4}'
-        coverage report | grep 'TOTAL' | awk '{if ($4+0 < 75) exit 1}'
-
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-report
-        path: coverage.xml
-
-    - name: Upload HTML coverage report
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-html-report
-        path: htmlcov
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
