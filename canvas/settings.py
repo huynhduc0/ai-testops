@@ -33,6 +33,10 @@ ALLOWED_HOSTS = ['*']
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else []
 
+# Secure proxy settings (for HTTPS behind reverse proxy)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
