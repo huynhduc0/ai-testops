@@ -14,7 +14,7 @@ djangoApp:
   replicaCount: 2
   image:
     repository: huynhduc0/ai-testops
-    tag: 20251203-083500-7006a29
+    tag: 20251203-084211-4900490
   service:
     type: ClusterIP
     port: 8000
@@ -38,7 +38,7 @@ consumer:
   replicaCount: 2
   image:
     repository: huynhduc0/ai-testops-consumer
-    tag: 20251203-083500-7006a29
+    tag: 20251203-084211-4900490
   service:
     type: ClusterIP
     port: 8080
@@ -60,7 +60,7 @@ postgres:
   name: postgres
   image:
     repository: postgres
-    tag: 20251203-083500-7006a29
+    tag: 20251203-084211-4900490
   service:
     type: ClusterIP
     port: 5432
@@ -86,7 +86,7 @@ kafka:
   name: kafka
   image:
     repository: apache/kafka
-    tag: 20251203-083500-7006a29
+    tag: 20251203-084211-4900490
   service:
     type: ClusterIP
     port: 9092
@@ -111,7 +111,7 @@ zookeeper:
   name: zookeeper
   image:
     repository: wurstmeister/zookeeper
-    tag: 20251203-083500-7006a29
+    tag: 20251203-084211-4900490
   service:
     type: ClusterIP
     port: 2181
@@ -136,7 +136,7 @@ kafkaUI:
   enabled: true
   image:
     repository: provectuslabs/kafka-ui
-    tag: 20251203-083500-7006a29
+    tag: 20251203-084211-4900490
   service:
     type: ClusterIP
     port: 8080
