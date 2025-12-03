@@ -191,3 +191,15 @@ secrets:
 monitoring:
   grafana:
     prometheusUrl: ""
+
+# KEDA Autoscaling
+keda:
+  enabled: true
+  pollingInterval: 30
+  cooldownPeriod: 300
+  consumer:
+    minReplicas: 1
+    maxReplicas: 10
+    consumerGroup: "test-consumer-group"
+    topic: "test_run_queue"
+    lagThreshold: "10"

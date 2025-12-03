@@ -34,6 +34,10 @@ spec:
           value: "{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }}"
         - name: KAFKA_BOOTSTRAP_SERVERS
           value: "{{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }}"
+        - name: KAFKA_CONSUMER_GROUP
+          value: {{ .Values.keda.consumer.consumerGroup | quote }}
+        - name: KAFKA_TOPIC
+          value: {{ .Values.keda.consumer.topic | quote }}
         resources:
           {{- toYaml .Values.consumer.resources | nindent 10 }}
         livenessProbe:
