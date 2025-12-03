@@ -7,17 +7,29 @@ metadata:
     {{- include "ai-testops.labels" . | nindent 4 }}
   annotations:
     argocd.argoproj.io/sync-wave: "2"
-    argocd.argoproj.io/hook: PostSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
-  ttlSecondsAfterFinished: 100
-  backoffLimit: 3
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 5
   template:
     metadata:
       labels:
         app: kafka-topic-init
     spec:
       restartPolicy: OnFailure
+      initContainers:
+      - name: wait-for-kafka
+        image: busybox:1.28
+        command: 
+          - sh
+          - -c
+          - |
+            echo "Waiting for Kafka to be ready..."
+            until nc -z {{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local {{ .Values.kafka.service.port }}; do
+              echo "Kafka not ready, sleeping..."
+              sleep 5
+            done
+            echo "Kafka is ready!"
+            sleep 10
       containers:
       - name: kafka-topic-creator
         image: "{{ .Values.kafka.image.repository }}:{{ .Values.kafka.image.tag }}"
@@ -25,12 +37,14 @@ spec:
           - sh
           - -c
           - |
+            echo "Creating Kafka topic: test_run_queue"
             /opt/kafka/bin/kafka-topics.sh --create \
               --bootstrap-server {{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }} \
               --topic test_run_queue \
               --partitions 3 \
               --replication-factor 1 \
-              --if-not-exists
+              --if-not-exists || echo "Topic might already exist, continuing..."
             
+            echo "Listing topics:"
             /opt/kafka/bin/kafka-topics.sh --list \
               --bootstrap-server {{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }}
