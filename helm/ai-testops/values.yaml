@@ -20,11 +20,11 @@ djangoApp:
     port: 8000
   resources:
     requests:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: "256Mi"
+      cpu: "100m"
     limits:
-      memory: "1Gi"
-      cpu: "1000m"
+      memory: "512Mi"
+      cpu: "200m"
   autoscaling:
     enabled: true
     minReplicas: 2
@@ -44,11 +44,11 @@ consumer:
     port: 8080
   resources:
     requests:
-      memory: "256Mi"
-      cpu: "250m"
+      memory: "128Mi"
+      cpu: "100m"
     limits:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: "256Mi"
+      cpu: "200m"
   autoscaling:
     enabled: false  # Disable HPA for consumer - scale based on Kafka lag instead
     minReplicas: 2
@@ -75,11 +75,11 @@ postgres:
     password: canvas_password
   resources:
     requests:
-      memory: "256Mi"
-      cpu: "250m"
+      memory: "128Mi"
+      cpu: "100m"
     limits:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: "256Mi"
+      cpu: "200m"
 
 # Kafka
 kafka:
@@ -99,11 +99,11 @@ kafka:
     replicationFactor: 1
   resources:
     requests:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: "256Mi"
+      cpu: "200m"
     limits:
-      memory: "1Gi"
-      cpu: "1000m"
+      memory: "512Mi"
+      cpu: "400m"
 
 # Zookeeper (disabled - using Kafka KRaft mode)
 zookeeper:
@@ -142,11 +142,11 @@ kafkaUI:
     port: 8080
   resources:
     requests:
-      memory: "256Mi"
-      cpu: "250m"
+      memory: "128Mi"
+      cpu: "100m"
     limits:
-      memory: "512Mi"
-      cpu: "500m"
+      memory: "256Mi"
+      cpu: "200m"
 
 # Ingress
 ingress:
