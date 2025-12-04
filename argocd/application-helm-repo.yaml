@@ -1,0 +1,61 @@
+# Example ArgoCD Application using Helm Repository
+# Use this after setting up GitHub Pages Helm repository
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-testops
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  
+  source:
+    # Helm Repository (after GitHub Pages setup)
+    repoURL: https://huynhduc0.github.io/ai-testops
+    chart: ai-testops
+    targetRevision: "1.0.*"  # Auto-update to latest 1.0.x version
+    
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters:
+        - name: namespace
+          value: testops
+        # Override specific values if needed
+        # - name: djangoApp.image.tag
+        #   value: "latest"
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: testops
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  revisionHistoryLimit: 10
+  
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: ""
+      kind: Secret
+      jsonPointers:
+        - /data
+        - /stringData

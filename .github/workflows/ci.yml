@@ -60,18 +60,37 @@ jobs:
       run: |
         sed -i "/djangoApp:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/ai-testops/values.yaml
         sed -i "/consumer:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/ai-testops/values.yaml
+    
+    - name: Bump Helm chart version
+      id: chart_version
+      run: |
+        # Get current chart version
+        CURRENT_VERSION=$(grep '^version:' helm/ai-testops/Chart.yaml | awk '{print $2}')
+        echo "Current chart version: $CURRENT_VERSION"
+        
+        # Bump patch version (e.g., 1.0.1 -> 1.0.2)
+        IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+        NEW_PATCH=$((patch + 1))
+        NEW_VERSION="${major}.${minor}.${NEW_PATCH}"
+        
+        echo "New chart version: $NEW_VERSION"
+        echo "CHART_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+        
+        # Update Chart.yaml
+        sed -i "s/^version:.*/version: $NEW_VERSION/" helm/ai-testops/Chart.yaml
+        sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.VERSION }}\"/" helm/ai-testops/Chart.yaml
         
     - name: Commit and push changes
       if: github.ref == 'refs/heads/main'
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add helm/ai-testops/values.yaml
+        git add helm/ai-testops/values.yaml helm/ai-testops/Chart.yaml
         if git diff --staged --quiet; then
           echo "No changes to commit"
           exit 0
         fi
-        git commit -m "chore: update image tags to ${{ steps.version.outputs.VERSION }}"
+        git commit -m "chore: bump chart to v${{ steps.chart_version.outputs.CHART_VERSION }} with images ${{ steps.version.outputs.VERSION }}"
         git pull --rebase
         git push origin main
     
