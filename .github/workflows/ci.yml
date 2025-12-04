@@ -92,7 +92,7 @@ jobs:
           echo "No changes to commit"
           exit 0
         fi
-        git commit -m "chore: bump chart to v${{ steps.chart_version.outputs.CHART_VERSION }} with images ${{ steps.version.outputs.VERSION }}"
+        git commit -m "chore: bump chart to v${{ steps.chart_version.outputs.CHART_VERSION }} with images ${{ steps.version.outputs.VERSION }} [skip ci]"
         git pull --rebase
         git push origin main
     
