@@ -2,11 +2,8 @@ name: Release Helm Chart
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'helm/ai-testops/**'
-      - '.github/workflows/helm-release.yaml'
+    tags:
+      - 'v*'  # Trigger on version tags (v1951599, v2a3b4c5, etc.)
 
 jobs:
   release:

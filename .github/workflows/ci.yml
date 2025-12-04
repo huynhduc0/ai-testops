@@ -42,6 +42,7 @@ jobs:
         push: true
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/ai-testops:${{ steps.version.outputs.VERSION }}
+          ${{ secrets.DOCKER_USERNAME }}/ai-testops:v${{ steps.chart_version.outputs.CHART_VERSION }}
           ${{ secrets.DOCKER_USERNAME }}/ai-testops:latest
         platforms: linux/amd64,linux/arm64
     
@@ -53,6 +54,7 @@ jobs:
         push: true
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/ai-testops-consumer:${{ steps.version.outputs.VERSION }}
+          ${{ secrets.DOCKER_USERNAME }}/ai-testops-consumer:v${{ steps.chart_version.outputs.CHART_VERSION }}
           ${{ secrets.DOCKER_USERNAME }}/ai-testops-consumer:latest
         platforms: linux/amd64,linux/arm64
     
@@ -97,5 +99,5 @@ jobs:
     - name: Create and push Git tag
       if: github.ref == 'refs/heads/main'
       run: |
-        git tag -a "v${{ steps.version.outputs.VERSION }}" -m "Release v${{ steps.version.outputs.VERSION }}"
-        git push origin "v${{ steps.version.outputs.VERSION }}"
+        git tag -a "v${{ steps.chart_version.outputs.CHART_VERSION }}" -m "Release v${{ steps.chart_version.outputs.CHART_VERSION }} (images: ${{ steps.version.outputs.VERSION }})"
+        git push origin "v${{ steps.chart_version.outputs.CHART_VERSION }}"
