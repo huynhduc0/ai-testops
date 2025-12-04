@@ -34,8 +34,28 @@ jobs:
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         echo "Generated version: $VERSION"
     
+    - name: Check for changes
+      uses: dorny/paths-filter@v2
+      id: changes
+      with:
+        filters: |
+          django:
+            - 'canvas/**'
+            - 'api_tests/**'
+            - 'home/**'
+            - 'templates/**'
+            - 'static/**'
+            - 'Dockerfile'
+            - 'requirements.txt'
+            - 'manage.py'
+          consumer:
+            - 'test-execute-consumer/**'
+          helm:
+            - 'helm/**'
+
     - name: Bump Helm chart version
       id: chart_version
+      if: steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true'
       run: |
         # Get current chart version
         CURRENT_VERSION=$(grep '^version:' helm/ai-testops/Chart.yaml | awk '{print $2}')
@@ -51,9 +71,13 @@ jobs:
         
         # Update Chart.yaml
         sed -i "s/^version:.*/version: $NEW_VERSION/" helm/ai-testops/Chart.yaml
-        sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.VERSION }}\"/" helm/ai-testops/Chart.yaml
+        # Only update appVersion if django changed (as it represents the main app)
+        if [ "${{ steps.changes.outputs.django }}" == "true" ]; then
+          sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.VERSION }}\"/" helm/ai-testops/Chart.yaml
+        fi
     
     - name: Build and push Django app image
+      if: steps.changes.outputs.django == 'true'
       uses: docker/build-push-action@v4
       with:
         context: .
@@ -66,6 +90,7 @@ jobs:
         platforms: linux/amd64,linux/arm64
     
     - name: Build and push Consumer image
+      if: steps.changes.outputs.consumer == 'true'
       uses: docker/build-push-action@v4
       with:
         context: .
@@ -79,11 +104,18 @@ jobs:
     
     - name: Update image tags in values.yaml
       run: |
-        sed -i "/djangoApp:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/ai-testops/values.yaml
-        sed -i "/consumer:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/ai-testops/values.yaml
+        if [ "${{ steps.changes.outputs.django }}" == "true" ]; then
+          echo "Updating Django app image tag to ${{ steps.version.outputs.VERSION }}"
+          sed -i "/djangoApp:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/ai-testops/values.yaml
+        fi
+        
+        if [ "${{ steps.changes.outputs.consumer }}" == "true" ]; then
+          echo "Updating Consumer image tag to ${{ steps.version.outputs.VERSION }}"
+          sed -i "/consumer:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/ai-testops/values.yaml
+        fi
         
     - name: Commit and push changes
-      if: github.ref == 'refs/heads/main'
+      if: steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true'
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
