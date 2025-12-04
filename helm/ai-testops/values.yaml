@@ -137,7 +137,7 @@ zookeeper:
 # Kafka UI
 kafkaUI:
   name: kafka-ui
-  enabled: true
+  enabled: false
   image:
     repository: provectuslabs/kafka-ui
     tag: "v0.7.2"
