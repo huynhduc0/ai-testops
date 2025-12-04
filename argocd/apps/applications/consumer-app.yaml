@@ -6,7 +6,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  project: default
+  project: wide
   
   source:
     repoURL: https://huynhduc0.github.io/ai-testops
