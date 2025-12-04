@@ -34,6 +34,25 @@ jobs:
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         echo "Generated version: $VERSION"
     
+    - name: Bump Helm chart version
+      id: chart_version
+      run: |
+        # Get current chart version
+        CURRENT_VERSION=$(grep '^version:' helm/ai-testops/Chart.yaml | awk '{print $2}')
+        echo "Current chart version: $CURRENT_VERSION"
+        
+        # Bump patch version (e.g., 1.0.1 -> 1.0.2)
+        IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+        NEW_PATCH=$((patch + 1))
+        NEW_VERSION="${major}.${minor}.${NEW_PATCH}"
+        
+        echo "New chart version: $NEW_VERSION"
+        echo "CHART_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+        
+        # Update Chart.yaml
+        sed -i "s/^version:.*/version: $NEW_VERSION/" helm/ai-testops/Chart.yaml
+        sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.VERSION }}\"/" helm/ai-testops/Chart.yaml
+    
     - name: Build and push Django app image
       uses: docker/build-push-action@v4
       with:
@@ -62,25 +81,6 @@ jobs:
       run: |
         sed -i "/djangoApp:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/ai-testops/values.yaml
         sed -i "/consumer:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/ai-testops/values.yaml
-    
-    - name: Bump Helm chart version
-      id: chart_version
-      run: |
-        # Get current chart version
-        CURRENT_VERSION=$(grep '^version:' helm/ai-testops/Chart.yaml | awk '{print $2}')
-        echo "Current chart version: $CURRENT_VERSION"
-        
-        # Bump patch version (e.g., 1.0.1 -> 1.0.2)
-        IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
-        NEW_PATCH=$((patch + 1))
-        NEW_VERSION="${major}.${minor}.${NEW_PATCH}"
-        
-        echo "New chart version: $NEW_VERSION"
-        echo "CHART_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
-        
-        # Update Chart.yaml
-        sed -i "s/^version:.*/version: $NEW_VERSION/" helm/ai-testops/Chart.yaml
-        sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.VERSION }}\"/" helm/ai-testops/Chart.yaml
         
     - name: Commit and push changes
       if: github.ref == 'refs/heads/main'
