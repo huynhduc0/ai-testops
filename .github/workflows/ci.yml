@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'helm/ai-testops/values.yaml'
+
 
 jobs:
   build-and-push:
