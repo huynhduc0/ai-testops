@@ -55,25 +55,29 @@ jobs:
 
     - name: Bump Helm chart version
       id: chart_version
-      if: steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true'
       run: |
         # Get current chart version
         CURRENT_VERSION=$(grep '^version:' helm/ai-testops/Chart.yaml | awk '{print $2}')
         echo "Current chart version: $CURRENT_VERSION"
         
-        # Bump patch version (e.g., 1.0.1 -> 1.0.2)
-        IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
-        NEW_PATCH=$((patch + 1))
-        NEW_VERSION="${major}.${minor}.${NEW_PATCH}"
-        
-        echo "New chart version: $NEW_VERSION"
-        echo "CHART_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
-        
-        # Update Chart.yaml
-        sed -i "s/^version:.*/version: $NEW_VERSION/" helm/ai-testops/Chart.yaml
-        # Only update appVersion if django changed (as it represents the main app)
-        if [ "${{ steps.changes.outputs.django }}" == "true" ]; then
-          sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.VERSION }}\"/" helm/ai-testops/Chart.yaml
+        if [ "${{ steps.changes.outputs.django }}" == "true" ] || [ "${{ steps.changes.outputs.consumer }}" == "true" ] || [ "${{ steps.changes.outputs.helm }}" == "true" ]; then
+          # Bump patch version (e.g., 1.0.1 -> 1.0.2)
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          NEW_PATCH=$((patch + 1))
+          NEW_VERSION="${major}.${minor}.${NEW_PATCH}"
+          
+          echo "New chart version: $NEW_VERSION"
+          echo "CHART_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+          
+          # Update Chart.yaml
+          sed -i "s/^version:.*/version: $NEW_VERSION/" helm/ai-testops/Chart.yaml
+          # Only update appVersion if django changed (as it represents the main app)
+          if [ "${{ steps.changes.outputs.django }}" == "true" ]; then
+            sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.VERSION }}\"/" helm/ai-testops/Chart.yaml
+          fi
+        else
+          echo "No changes requiring chart bump. Using current version."
+          echo "CHART_VERSION=$CURRENT_VERSION" >> $GITHUB_OUTPUT
         fi
     
     - name: Build and push Django app image
@@ -129,7 +133,9 @@ jobs:
         git push origin main
     
     - name: Create and push Git tag
-      if: github.ref == 'refs/heads/main'
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true') && github.ref == 'refs/heads/main'
       run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git tag -a "v${{ steps.chart_version.outputs.CHART_VERSION }}" -m "Release v${{ steps.chart_version.outputs.CHART_VERSION }} (images: ${{ steps.version.outputs.VERSION }})"
         git push origin "v${{ steps.chart_version.outputs.CHART_VERSION }}"
