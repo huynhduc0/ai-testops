@@ -7,6 +7,30 @@ entries:
         kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml
       keda.sh/required: "true"
     apiVersion: v2
+    appVersion: 561a871
+    created: "2025-12-04T09:30:53.931561787Z"
+    description: A Helm chart for AI TestOps distributed system
+    digest: 48c5d72493cee4ee3580fca418c1f588b5c75c2d7bc4aac70bd5404c1be6637c
+    keywords:
+    - ai
+    - testing
+    - kafka
+    - microservices
+    - keda
+    maintainers:
+    - email: team@ai-testops.example.com
+      name: AI TestOps Team
+    name: ai-testops
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/ai-testops-1.0.4/ai-testops-1.0.4.tgz
+    version: 1.0.4
+  - annotations:
+      keda.sh/installation: |
+        Install KEDA before deploying this chart:
+        kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml
+      keda.sh/required: "true"
+    apiVersion: v2
     appVersion: b1928b6
     created: "2025-12-04T09:24:03.079545235Z"
     description: A Helm chart for AI TestOps distributed system
@@ -49,4 +73,4 @@ entries:
     urls:
     - https://github.com/huynhduc0/ai-testops/releases/download/ai-testops-1.0.2/ai-testops-1.0.2.tgz
     version: 1.0.2
-generated: "2025-12-04T09:24:03.079552482Z"
+generated: "2025-12-04T09:30:53.93157419Z"
