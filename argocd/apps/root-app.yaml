@@ -12,6 +12,8 @@ spec:
     repoURL: https://github.com/huynhduc0/ai-testops.git
     targetRevision: main
     path: argocd/apps
+    directory:
+      recurse: true
   
   destination:
     server: https://kubernetes.default.svc
