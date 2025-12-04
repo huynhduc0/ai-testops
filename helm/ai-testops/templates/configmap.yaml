@@ -25,5 +25,5 @@ data:
   SECRET_KEY: {{ .Values.django.secretKey | quote }}
   ALLOWED_HOSTS: "{{ (index .Values.ingress.hosts 0).host }},localhost,127.0.0.1"
   CSRF_TRUSTED_ORIGINS: "https://{{ (index .Values.ingress.hosts 0).host }}"
-  SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI: "https://{{ (index .Values.ingress.hosts 0).host }}/auth/complete/google/"
+  SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI: "https://{{ (index .Values.ingress.hosts 0).host }}/accounts/google/login/callback/"
   GRAFANA_CLOUD_PROMETHEUS_URL: {{ .Values.monitoring.grafana.prometheusUrl | default "" | quote }}
