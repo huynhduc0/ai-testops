@@ -37,6 +37,10 @@ CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.ge
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 
+# Force Allauth to use HTTPS for OAuth callbacks (for Cloudflare SSL termination)
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
