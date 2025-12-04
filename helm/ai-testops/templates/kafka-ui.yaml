@@ -26,6 +26,8 @@ spec:
         ports:
         - containerPort: {{ .Values.kafkaUI.service.port }}
         env:
+        - name: JAVA_OPTS
+          value: "-Dlogging.level.root=INFO -Dspring.jcl.ignore.commons-logging=true"
         - name: KAFKA_CLUSTERS_0_NAME
           value: "ai-testops-cluster"
         - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
