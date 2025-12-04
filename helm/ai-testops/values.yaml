@@ -18,7 +18,7 @@ djangoApp:
   replicaCount: 1
   image:
     repository: vanlahuynhduc/ai-testops
-    tag: "3b9adb7"
+    tag: "e8f8953"
   service:
     type: ClusterIP
     port: 8000
@@ -42,7 +42,7 @@ consumer:
   replicaCount: 1
   image:
     repository: vanlahuynhduc/ai-testops-consumer
-    tag: "3b9adb7"
+    tag: "e8f8953"
   service:
     type: ClusterIP
     port: 8080
