@@ -2,8 +2,8 @@ apiVersion: v2
 name: ai-testops
 description: A Helm chart for AI TestOps distributed system
 type: application
-version: 1.0.5
-appVersion: "c0dcbc4"
+version: 1.0.6
+appVersion: "731b8d3"
 keywords:
   - ai
   - testing
