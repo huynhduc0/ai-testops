@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-testops-django
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  
+  source:
+    repoURL: https://huynhduc0.github.io/ai-testops
+    chart: ai-testops
+    targetRevision: "1.0.*"
+    helm:
+      values: |
+        # Enable only Django app
+        postgres:
+          enabled: false
+        kafka:
+          enabled: false
+        djangoApp:
+          enabled: true
+        consumer:
+          enabled: false
+        kafkaUI:
+          enabled: false
+        ingress:
+          enabled: false
+        keda:
+          enabled: false
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: testops
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas

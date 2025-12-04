@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-testops-shared
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: default
+  
+  source:
+    repoURL: https://huynhduc0.github.io/ai-testops
+    chart: ai-testops
+    targetRevision: "1.0.*"
+    helm:
+      values: |
+        # Enable only shared resources
+        postgres:
+          enabled: false
+        kafka:
+          enabled: false
+        djangoApp:
+          enabled: false
+        consumer:
+          enabled: false
+        kafkaUI:
+          enabled: false
+        ingress:
+          enabled: true
+        keda:
+          enabled: false
+        rbac:
+          enabled: true
+        networkPolicies:
+          enabled: true
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: testops
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      jsonPointers:
+        - /data
+        - /stringData
