@@ -97,3 +97,4 @@ spec:
     targetPort: {{ .Values.kafka.service.port }}
   selector:
     app: {{ .Values.kafka.name }}
+{{- end }}

@@ -1,3 +1,4 @@
+{{- if .Values.consumer.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -74,3 +75,4 @@ spec:
     targetPort: {{ .Values.consumer.service.port }}
   selector:
     app: {{ .Values.consumer.name }}
+{{- end }}

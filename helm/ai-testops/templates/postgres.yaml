@@ -109,3 +109,4 @@ spec:
     targetPort: {{ .Values.postgres.service.port }}
   selector:
     app: {{ .Values.postgres.name }}
+{{- end }}
