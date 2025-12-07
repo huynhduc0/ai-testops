@@ -308,6 +308,20 @@ entries:
   testops-infra:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2025-12-07T11:51:28.949210882Z"
+    description: Infrastructure components for TestOps platform (PostgreSQL, Kafka,
+      shared resources)
+    digest: 53a2b94a5d0b5bfce62808e482c08628d3f3d6fc1ba1cc8248340111ca08e695
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-infra
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-infra-1.0.4/testops-infra-1.0.4.tgz
+    version: 1.0.4
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2025-12-07T11:44:51.354899922Z"
     description: Infrastructure components for TestOps platform (PostgreSQL, Kafka,
       shared resources)
@@ -421,4 +435,4 @@ entries:
     urls:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.1/testops-publisher-1.2.1.tgz
     version: 1.2.1
-generated: "2025-12-07T11:44:51.491346622Z"
+generated: "2025-12-07T11:51:28.949251689Z"
