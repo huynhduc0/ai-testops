@@ -32,7 +32,7 @@ spec:
         rbac:
           enabled: true
         networkPolicies:
-          enabled: true
+          enabled: false
   
   destination:
     server: https://kubernetes.default.svc

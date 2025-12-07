@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ai-testops-keda
+  name: ai-testops-networkpolicies
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "6"
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   project: wide
   
@@ -14,7 +14,7 @@ spec:
     targetRevision: "1.0.*"
     helm:
       values: |
-        # Enable only KEDA
+        # Enable only NetworkPolicies
         postgres:
           enabled: false
         kafka:
@@ -28,6 +28,10 @@ spec:
         ingress:
           enabled: false
         keda:
+          enabled: false
+        rbac:
+          enabled: false
+        networkPolicies:
           enabled: true
   
   destination:
@@ -47,3 +51,4 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 20m
+

@@ -29,6 +29,8 @@ spec:
           enabled: false
         keda:
           enabled: false
+        networkPolicies:
+          enabled: false
   
   destination:
     server: https://kubernetes.default.svc

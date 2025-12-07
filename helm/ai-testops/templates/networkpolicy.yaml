@@ -55,6 +55,8 @@ kind: NetworkPolicy
 metadata:
   name: consumer-netpol
   namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   podSelector:
     matchLabels:
@@ -82,6 +84,8 @@ kind: NetworkPolicy
 metadata:
   name: postgres-netpol
   namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   podSelector:
     matchLabels:
@@ -102,6 +106,8 @@ kind: NetworkPolicy
 metadata:
   name: kafka-netpol
   namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   podSelector:
     matchLabels:
@@ -137,6 +143,8 @@ kind: NetworkPolicy
 metadata:
   name: zookeeper-netpol
   namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   podSelector:
     matchLabels:
