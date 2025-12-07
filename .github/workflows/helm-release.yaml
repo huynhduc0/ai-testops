@@ -47,3 +47,52 @@ jobs:
           charts_dir: helm
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Update index.html on gh-pages to trigger ArgoCD
+        run: |
+          git fetch origin gh-pages
+          git checkout gh-pages
+          
+          # Create or update index.html with current timestamp
+          cat > index.html << EOF
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>AI TestOps Helm Charts</title>
+              <meta http-equiv="refresh" content="0;url=https://github.com/${{ github.repository }}">
+              <style>
+                  body {
+                      font-family: Arial, sans-serif;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      height: 100vh;
+                      margin: 0;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                  }
+                  .container {
+                      text-align: center;
+                      padding: 2rem;
+                      background: rgba(255, 255, 255, 0.1);
+                      border-radius: 10px;
+                      backdrop-filter: blur(10px);
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>AI TestOps Helm Charts</h1>
+                  <p>Last updated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")</p>
+                  <p>Release: ${{ github.ref_name }}</p>
+                  <p>Redirecting to repository...</p>
+              </div>
+          </body>
+          </html>
+          EOF
+          
+          git add index.html
+          git commit -m "Update index.html for release ${{ github.ref_name }} - $(date -u +"%Y-%m-%d %H:%M:%S UTC")" || echo "No changes to commit"
+          git push origin gh-pages
