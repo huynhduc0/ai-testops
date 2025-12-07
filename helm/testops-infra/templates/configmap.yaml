@@ -1,4 +1,3 @@
-{{- if .Values.sharedResources.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -28,4 +27,3 @@ data:
   CSRF_TRUSTED_ORIGINS: "https://{{ (index .Values.ingress.hosts 0).host }}"
   SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI: "https://{{ (index .Values.ingress.hosts 0).host }}/accounts/google/login/callback/"
   GRAFANA_CLOUD_PROMETHEUS_URL: {{ .Values.monitoring.grafana.prometheusUrl | default "" | quote }}
-{{- end }}
