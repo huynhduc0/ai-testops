@@ -9,6 +9,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
     
     steps:
     - name: Checkout code
@@ -140,3 +143,33 @@ jobs:
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git tag -a "v${{ steps.chart_version.outputs.CHART_VERSION }}" -m "Release v${{ steps.chart_version.outputs.CHART_VERSION }} (images: ${{ steps.version.outputs.VERSION }})"
         git push origin "v${{ steps.chart_version.outputs.CHART_VERSION }}"
+    
+    - name: Create GitHub Release
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.chart_version.outputs.CHART_VERSION }}
+        name: Release v${{ steps.chart_version.outputs.CHART_VERSION }}
+        body: |
+          ## Chart Version: v${{ steps.chart_version.outputs.CHART_VERSION }}
+          
+          ### Image Version
+          - Commit SHA: `${{ steps.version.outputs.VERSION }}`
+          
+          ### Updated Components
+          ${{ steps.changes.outputs.django == 'true' && '✅ Django app' || '' }}
+          ${{ steps.changes.outputs.consumer == 'true' && '✅ Consumer' || '' }}
+          ${{ steps.changes.outputs.helm == 'true' && '✅ Helm chart' || '' }}
+          ${{ steps.changes.outputs.argocd == 'true' && '✅ ArgoCD config' || '' }}
+          
+          ### Docker Images
+          - `${{ secrets.DOCKER_USERNAME }}/ai-testops:${{ steps.version.outputs.VERSION }}`
+          - `${{ secrets.DOCKER_USERNAME }}/ai-testops-consumer:${{ steps.version.outputs.VERSION }}`
+          
+          ### Helm Chart
+          - Chart: `ai-testops`
+          - Version: `${{ steps.chart_version.outputs.CHART_VERSION }}`
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
