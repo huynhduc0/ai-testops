@@ -44,17 +44,17 @@ spec:
         livenessProbe:
           exec:
             command:
-            - pgrep
-            - -f
-            - python
+            - /bin/sh
+            - -c
+            - "ps aux | grep -v grep | grep python"
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           exec:
             command:
-            - pgrep
-            - -f
-            - python
+            - /bin/sh
+            - -c
+            - "ps aux | grep -v grep | grep python"
           initialDelaySeconds: 10
           periodSeconds: 5
 ---
