@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ai-testops-shared
+  name: testops-infra
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "0"
@@ -14,12 +14,10 @@ spec:
     targetRevision: "1.*.*"
     helm:
       values: |
-        # Enable only shared resources (secrets, configmap, rbac)
+        # Enable all infrastructure components
         postgres:
-          enabled: false
+          enabled: true
         kafka:
-          enabled: false
-        rbac:
           enabled: true
   
   destination:
@@ -31,6 +29,7 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
+      - CreateNamespace=true
       - SyncTimeout=1200
       - SkipDryRunOnMissingResource=true
     retry:

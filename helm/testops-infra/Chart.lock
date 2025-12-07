@@ -1,0 +1,12 @@
+dependencies:
+- name: postgres
+  repository: ""
+  version: 1.0.0
+- name: kafka
+  repository: ""
+  version: 1.0.0
+- name: shared
+  repository: ""
+  version: 1.0.0
+digest: sha256:1c9f53dc607a518881a98564f41498f0b26c5f1062133bc8034ae9f91cc48b71
+generated: "2025-12-07T19:22:52.468083+07:00"

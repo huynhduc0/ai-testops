@@ -7,3 +7,13 @@ appVersion: "1.0.0"
 maintainers:
   - name: Duc Truong
     email: thduc.dev@gmail.com
+
+dependencies:
+  - name: postgres
+    version: "1.0.0"
+    condition: postgres.enabled
+  - name: kafka
+    version: "1.0.0"
+    condition: kafka.enabled
+  - name: shared
+    version: "1.0.0"

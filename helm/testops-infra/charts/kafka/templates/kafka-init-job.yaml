@@ -1,9 +1,9 @@
-{{- if .Values.kafka.enabled }}
+{{- if .Values.global.kafka.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: kafka-topic-init
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.global.namespace }}
   labels:
     {{- include "ai-testops.labels" . | nindent 4 }}
   annotations:
@@ -25,7 +25,7 @@ spec:
           - -c
           - |
             echo "Waiting for Kafka to be ready..."
-            until nc -z {{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local {{ .Values.kafka.service.port }}; do
+            until nc -z {{ .Values.global.kafka.name }}.{{ .Values.global.namespace }}.svc.cluster.local {{ .Values.global.kafka.service.port }}; do
               echo "Kafka not ready, sleeping..."
               sleep 5
             done
@@ -33,14 +33,14 @@ spec:
             sleep 10
       containers:
       - name: kafka-topic-creator
-        image: "{{ .Values.kafka.image.repository }}:{{ .Values.kafka.image.tag }}"
+        image: "{{ .Values.global.kafka.image.repository }}:{{ .Values.global.kafka.image.tag }}"
         command:
           - sh
           - -c
           - |
             echo "Creating Kafka topic: test_run_queue"
             /opt/kafka/bin/kafka-topics.sh --create \
-              --bootstrap-server {{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }} \
+              --bootstrap-server {{ .Values.global.kafka.name }}.{{ .Values.global.namespace }}.svc.cluster.local:{{ .Values.global.kafka.service.port }} \
               --topic test_run_queue \
               --partitions 3 \
               --replication-factor 1 \
@@ -48,5 +48,5 @@ spec:
             
             echo "Listing topics:"
             /opt/kafka/bin/kafka-topics.sh --list \
-              --bootstrap-server {{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.kafka.service.port }}
+              --bootstrap-server {{ .Values.global.kafka.name }}.{{ .Values.global.namespace }}.svc.cluster.local:{{ .Values.global.kafka.service.port }}
 {{- end }}

@@ -1,11 +1,11 @@
-{{- if .Values.rbac.enabled }}
+{{- if .Values.global.rbac.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: django-app-sa
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.global.namespace }}
   labels:
-    app: {{ .Values.djangoApp.name }}
+    app: {{ .Values.global.djangoApp.name }}
   annotations:
     argocd.argoproj.io/sync-wave: "-2"
 ---
@@ -13,7 +13,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: django-app-role
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.global.namespace }}
 rules:
 - apiGroups: [""]
   resources: ["configmaps", "secrets"]
@@ -26,7 +26,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: django-app-rolebinding
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.global.namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -34,5 +34,5 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: django-app-sa
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.global.namespace }}
 {{- end }}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: shared
+description: Shared resources for TestOps (secrets, configmaps, RBAC)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

@@ -66,6 +66,7 @@ jobs:
         BUMP_INFRA=false
         BUMP_PUBLISHER=false
         BUMP_CONSUMER=false
+        BUMP_POSTDEPLOY=false
         
         # Check if we need to bump any charts
         if [ "${{ steps.changes.outputs.django }}" == "true" ] || [ "${{ steps.changes.outputs.helm }}" == "true" ]; then
@@ -78,6 +79,7 @@ jobs:
         
         if [ "${{ steps.changes.outputs.helm }}" == "true" ] || [ "${{ steps.changes.outputs.argocd }}" == "true" ]; then
           BUMP_INFRA=true
+          BUMP_POSTDEPLOY=true
         fi
         
         # Bump testops-infra
@@ -122,6 +124,20 @@ jobs:
         else
           CONSUMER_VERSION=$(grep '^version:' helm/testops-consumer/Chart.yaml | awk '{print $2}')
           echo "CONSUMER_VERSION=$CONSUMER_VERSION" >> $GITHUB_OUTPUT
+        fi
+        
+        # Bump testops-postdeploy
+        if [ "$BUMP_POSTDEPLOY" == "true" ]; then
+          CURRENT_VERSION=$(grep '^version:' helm/testops-postdeploy/Chart.yaml | awk '{print $2}')
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          NEW_PATCH=$((patch + 1))
+          POSTDEPLOY_VERSION="${major}.${minor}.${NEW_PATCH}"
+          sed -i "s/^version:.*/version: $POSTDEPLOY_VERSION/" helm/testops-postdeploy/Chart.yaml
+          echo "POSTDEPLOY_VERSION=$POSTDEPLOY_VERSION" >> $GITHUB_OUTPUT
+          echo "Bumped testops-postdeploy: $CURRENT_VERSION -> $POSTDEPLOY_VERSION"
+        else
+          POSTDEPLOY_VERSION=$(grep '^version:' helm/testops-postdeploy/Chart.yaml | awk '{print $2}')
+          echo "POSTDEPLOY_VERSION=$POSTDEPLOY_VERSION" >> $GITHUB_OUTPUT
         fi
     
     - name: Build and push Django app image
@@ -214,6 +230,14 @@ jobs:
           git tag -a "testops-consumer-${{ steps.chart_version.outputs.CONSUMER_VERSION }}" -m "Release testops-consumer ${{ steps.chart_version.outputs.CONSUMER_VERSION }}"
           git push origin "testops-consumer-${{ steps.chart_version.outputs.CONSUMER_VERSION }}"
         fi
+        
+        # Tag for postdeploy chart
+        if git rev-parse "testops-postdeploy-${{ steps.chart_version.outputs.POSTDEPLOY_VERSION }}" >/dev/null 2>&1; then
+          echo "Tag testops-postdeploy-${{ steps.chart_version.outputs.POSTDEPLOY_VERSION }} already exists"
+        else
+          git tag -a "testops-postdeploy-${{ steps.chart_version.outputs.POSTDEPLOY_VERSION }}" -m "Release testops-postdeploy ${{ steps.chart_version.outputs.POSTDEPLOY_VERSION }}"
+          git push origin "testops-postdeploy-${{ steps.chart_version.outputs.POSTDEPLOY_VERSION }}"
+        fi
     
     - name: Install Helm
       if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
@@ -247,6 +271,7 @@ jobs:
           <li>testops-infra: INFRA_VERSION</li>
           <li>testops-publisher: PUBLISHER_VERSION</li>
           <li>testops-consumer: CONSUMER_VERSION</li>
+          <li>testops-postdeploy: POSTDEPLOY_VERSION</li>
         </ul>
         </body></html>
         EOF
@@ -255,9 +280,10 @@ jobs:
         sed -i "s/INFRA_VERSION/${{ steps.chart_version.outputs.INFRA_VERSION }}/" index.html
         sed -i "s/PUBLISHER_VERSION/${{ steps.chart_version.outputs.PUBLISHER_VERSION }}/" index.html
         sed -i "s/CONSUMER_VERSION/${{ steps.chart_version.outputs.CONSUMER_VERSION }}/" index.html
+        sed -i "s/POSTDEPLOY_VERSION/${{ steps.chart_version.outputs.POSTDEPLOY_VERSION }}/" index.html
         
         git add index.html
-        git commit -m "Update index.html (infra:${{ steps.chart_version.outputs.INFRA_VERSION }}, publisher:${{ steps.chart_version.outputs.PUBLISHER_VERSION }}, consumer:${{ steps.chart_version.outputs.CONSUMER_VERSION }})" || echo "No changes"
+        git commit -m "Update index.html (infra:${{ steps.chart_version.outputs.INFRA_VERSION }}, publisher:${{ steps.chart_version.outputs.PUBLISHER_VERSION }}, consumer:${{ steps.chart_version.outputs.CONSUMER_VERSION }}, postdeploy:${{ steps.chart_version.outputs.POSTDEPLOY_VERSION }})" || echo "No changes"
         git push origin gh-pages
         
         git checkout main
@@ -273,6 +299,7 @@ jobs:
           - **testops-infra**: `${{ steps.chart_version.outputs.INFRA_VERSION }}`
           - **testops-publisher**: `${{ steps.chart_version.outputs.PUBLISHER_VERSION }}`
           - **testops-consumer**: `${{ steps.chart_version.outputs.CONSUMER_VERSION }}`
+          - **testops-postdeploy**: `${{ steps.chart_version.outputs.POSTDEPLOY_VERSION }}`
           
           ## 🐳 Docker Images
           - `${{ secrets.DOCKER_USERNAME }}/ai-testops:${{ steps.version.outputs.VERSION }}`

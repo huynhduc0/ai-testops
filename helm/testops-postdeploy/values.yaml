@@ -1,0 +1,37 @@
+# Default values for testops-postdeploy
+
+namespace: testops
+
+# NetworkPolicies
+networkPolicies:
+  enabled: true
+  
+  # Allow Django app to communicate with Postgres
+  allowDjangoToPostgres: true
+  
+  # Allow Django app to communicate with Kafka
+  allowDjangoToKafka: true
+  
+  # Allow Consumer to communicate with Kafka
+  allowConsumerToKafka: true
+  
+  # Allow external traffic to Django app
+  allowExternalToDjango: true
+  
+  # Deny all other traffic by default
+  denyAllByDefault: false
+
+# Monitoring
+monitoring:
+  enabled: false
+  
+  serviceMonitors:
+    django:
+      enabled: false
+      interval: 30s
+      path: /metrics
+    
+    consumer:
+      enabled: false
+      interval: 30s
+      path: /metrics

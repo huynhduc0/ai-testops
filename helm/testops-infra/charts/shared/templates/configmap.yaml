@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "ai-testops.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+data:
+  POSTGRES_DB: {{ .Values.global.postgres.config.database | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "ai-testops.labels" . | nindent 4 }}
+data:
+  POSTGRES_HOST: "{{ .Values.global.postgres.name }}.{{ .Values.global.namespace }}.svc.cluster.local"
+  POSTGRES_PORT: {{ .Values.global.postgres.service.port | quote }}
+  KAFKA_BOOTSTRAP_SERVERS: "{{ .Values.global.kafka.name }}.{{ .Values.global.namespace }}.svc.cluster.local:{{ .Values.global.kafka.service.port }}"
+  KAFKA_TOPIC: "test_run_queue"
+  SECRET_KEY: {{ .Values.global.django.secretKey | quote }}
+  ALLOWED_HOSTS: "{{ (index .Values.global.ingress.hosts 0).host }},localhost,127.0.0.1"
+  CSRF_TRUSTED_ORIGINS: "https://{{ (index .Values.global.ingress.hosts 0).host }}"
+  SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI: "https://{{ (index .Values.global.ingress.hosts 0).host }}/accounts/google/login/callback/"
+  GRAFANA_CLOUD_PROMETHEUS_URL: {{ .Values.global.monitoring.grafana.prometheusUrl | default "" | quote }}
