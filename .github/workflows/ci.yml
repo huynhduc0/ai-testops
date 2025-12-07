@@ -148,6 +148,29 @@ jobs:
         git tag -a "v${{ steps.chart_version.outputs.CHART_VERSION }}" -m "Release v${{ steps.chart_version.outputs.CHART_VERSION }} (images: ${{ steps.version.outputs.VERSION }})"
         git push origin "v${{ steps.chart_version.outputs.CHART_VERSION }}"
     
+    - name: Trigger ArgoCD by updating gh-pages
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
+      run: |
+        # Wait a bit for chart-releaser to finish
+        sleep 10
+        
+        git fetch origin gh-pages
+        git checkout gh-pages
+        
+        # Update timestamp file to trigger pages rebuild
+        cat > .argocd-trigger << EOF
+        Last Release: v${{ steps.chart_version.outputs.CHART_VERSION }}
+        Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        Commit: ${{ steps.version.outputs.VERSION }}
+        Run: ${{ github.run_id }}
+        EOF
+        
+        git add .argocd-trigger
+        git commit -m "trigger: v${{ steps.chart_version.outputs.CHART_VERSION }} [${{ github.run_id }}]"
+        git push origin gh-pages
+        
+        git checkout main
+    
     - name: Create GitHub Release
       if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
@@ -177,20 +200,3 @@ jobs:
         prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Update gh-pages to trigger ArgoCD
-      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
-      run: |
-        git fetch origin gh-pages:gh-pages 2>/dev/null || git checkout --orphan gh-pages
-        git checkout gh-pages
-        
-        # Update timestamp file to trigger pages build
-        echo "Last updated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" > .argocd-trigger
-        echo "Release: v${{ steps.chart_version.outputs.CHART_VERSION }}" >> .argocd-trigger
-        echo "Commit: ${{ steps.version.outputs.VERSION }}" >> .argocd-trigger
-        
-        git add .argocd-trigger
-        git commit -m "trigger: v${{ steps.chart_version.outputs.CHART_VERSION }} - $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-        git push origin gh-pages
-        
-        git checkout main
