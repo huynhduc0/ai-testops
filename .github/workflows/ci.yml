@@ -257,28 +257,22 @@ jobs:
       if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: testops-${{ steps.version.outputs.VERSION }}
+        tag_name: v${{ steps.version.outputs.VERSION }}
         name: Release ${{ steps.version.outputs.VERSION }}
         body: |
-          ## Release ${{ steps.version.outputs.VERSION }}
+          ## 📦 Chart Versions
+          - **testops-infra**: `${{ steps.chart_version.outputs.INFRA_VERSION }}`
+          - **testops-publisher**: `${{ steps.chart_version.outputs.PUBLISHER_VERSION }}`
+          - **testops-consumer**: `${{ steps.chart_version.outputs.CONSUMER_VERSION }}`
           
-          ### Chart Versions
-          - testops-infra: `${{ steps.chart_version.outputs.INFRA_VERSION }}`
-          - testops-publisher: `${{ steps.chart_version.outputs.PUBLISHER_VERSION }}`
-          - testops-consumer: `${{ steps.chart_version.outputs.CONSUMER_VERSION }}`
-          
-          ### Image Version
-          - Commit SHA: `${{ steps.version.outputs.VERSION }}`
-          
-          ### Updated Components
-          ${{ steps.changes.outputs.django == 'true' && '✅ Django app (publisher)' || '' }}
-          ${{ steps.changes.outputs.consumer == 'true' && '✅ Consumer' || '' }}
-          ${{ steps.changes.outputs.helm == 'true' && '✅ Helm charts' || '' }}
-          ${{ steps.changes.outputs.argocd == 'true' && '✅ ArgoCD config' || '' }}
-          
-          ### Docker Images
+          ## 🐳 Docker Images
           - `${{ secrets.DOCKER_USERNAME }}/ai-testops:${{ steps.version.outputs.VERSION }}`
           - `${{ secrets.DOCKER_USERNAME }}/ai-testops-consumer:${{ steps.version.outputs.VERSION }}`
+          
+          ## 🔄 Updated Components
+          ${{ steps.changes.outputs.django == 'true' && '- ✅ Django app (publisher)\n' || '' }}${{ steps.changes.outputs.consumer == 'true' && '- ✅ Consumer\n' || '' }}${{ steps.changes.outputs.helm == 'true' && '- ✅ Helm charts\n' || '' }}${{ steps.changes.outputs.argocd == 'true' && '- ✅ ArgoCD config\n' || '' }}
+          
+          **Commit**: `${{ steps.version.outputs.VERSION }}`
         draft: false
         prerelease: false
       env:
