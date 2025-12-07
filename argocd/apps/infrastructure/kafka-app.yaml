@@ -10,30 +10,18 @@ spec:
   
   source:
     repoURL: https://huynhduc0.github.io/ai-testops
-    chart: ai-testops
+    chart: testops-infra
     targetRevision: "1.*.*"
     helm:
       values: |
         # Enable only Kafka
-        sharedResources:
-          enabled: false
         postgres:
           enabled: false
         kafka:
           enabled: true
-        djangoApp:
-          enabled: false
-        consumer:
-          enabled: false
-        kafkaUI:
-          enabled: false
         ingress:
           enabled: false
-        keda:
-          enabled: false
         rbac:
-          enabled: false
-        networkPolicies:
           enabled: false
   
   destination:

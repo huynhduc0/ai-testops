@@ -10,31 +10,8 @@ spec:
   
   source:
     repoURL: https://huynhduc0.github.io/ai-testops
-    chart: ai-testops
+    chart: testops-publisher
     targetRevision: "1.*.*"
-    helm:
-      values: |
-        # Enable only Django app
-        sharedResources:
-          enabled: false
-        postgres:
-          enabled: false
-        kafka:
-          enabled: false
-        djangoApp:
-          enabled: true
-        consumer:
-          enabled: false
-        kafkaUI:
-          enabled: false
-        ingress:
-          enabled: false
-        keda:
-          enabled: false
-        rbac:
-          enabled: false
-        networkPolicies:
-          enabled: false
   
   destination:
     server: https://kubernetes.default.svc

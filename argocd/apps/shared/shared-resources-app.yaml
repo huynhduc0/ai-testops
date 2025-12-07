@@ -10,7 +10,7 @@ spec:
   
   source:
     repoURL: https://huynhduc0.github.io/ai-testops
-    chart: ai-testops
+    chart: testops-infra
     targetRevision: "1.*.*"
     helm:
       values: |
@@ -19,20 +19,10 @@ spec:
           enabled: false
         kafka:
           enabled: false
-        djangoApp:
-          enabled: false
-        consumer:
-          enabled: false
-        kafkaUI:
-          enabled: false
         ingress:
           enabled: true
-        keda:
-          enabled: false
         rbac:
           enabled: true
-        networkPolicies:
-          enabled: false
   
   destination:
     server: https://kubernetes.default.svc
