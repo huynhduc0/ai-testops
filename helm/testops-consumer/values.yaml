@@ -1,0 +1,48 @@
+# Default values for ai-testops-consumer
+
+namespace: testops
+
+# Global image settings
+image:
+  pullPolicy: Always
+
+# Test Execute Consumer
+consumer:
+  name: test-execute-consumer
+  replicaCount: 1
+  image:
+    repository: vanlahuynhduc/ai-testops-consumer
+    tag: "675cc00"
+  service:
+    type: ClusterIP
+    port: 8080
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+  autoscaling:
+    enabled: false  # Disable HPA for consumer - scale based on Kafka lag instead
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+
+# Kafka connection (external to this chart)
+kafka:
+  name: kafka
+  service:
+    port: 9092
+
+# KEDA Autoscaling
+keda:
+  enabled: true
+  pollingInterval: 30
+  cooldownPeriod: 300
+  consumer:
+    minReplicas: 1
+    maxReplicas: 10
+    consumerGroup: "test-consumer-group"
+    topic: "test_run_queue"
+    lagThreshold: "10"

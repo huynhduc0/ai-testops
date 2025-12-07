@@ -1,6 +1,6 @@
 apiVersion: v2
-name: ai-testops
-description: A Helm chart for AI TestOps distributed system
+name: testops-publisher
+description: Publisher service for TestOps platform
 type: application
 version: 1.2.0
 appVersion: "675cc00"

@@ -1,22 +1,24 @@
-{{- if .Values.rbac.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: django-app-sa
+  name: consumer-sa
   namespace: {{ .Values.namespace }}
   labels:
-    app: {{ .Values.djangoApp.name }}
+    app: {{ .Values.consumer.name }}
+    {{- include "ai-testops.labels" . | nindent 4 }}
   annotations:
     argocd.argoproj.io/sync-wave: "-2"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: django-app-role
+  name: consumer-role
   namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ai-testops.labels" . | nindent 4 }}
 rules:
 - apiGroups: [""]
-  resources: ["configmaps", "secrets"]
+  resources: ["configmaps"]
   verbs: ["get", "list"]
 - apiGroups: [""]
   resources: ["pods"]
@@ -25,14 +27,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: django-app-rolebinding
+  name: consumer-rolebinding
   namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ai-testops.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: django-app-role
+  name: consumer-role
 subjects:
 - kind: ServiceAccount
-  name: django-app-sa
+  name: consumer-sa
   namespace: {{ .Values.namespace }}
-{{- end }}

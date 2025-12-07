@@ -1,0 +1,104 @@
+# Default values for testops-infra
+
+namespace: testops
+
+# Global image settings
+image:
+  pullPolicy: Always
+  registry: docker.io
+
+# PostgreSQL Database
+postgres:
+  enabled: true
+  name: postgres
+  image:
+    repository: postgres
+    tag: "13"
+  service:
+    type: ClusterIP
+    port: 5432
+  persistence:
+    enabled: true
+    size: 2Gi
+    storageClass: "standard"
+  config:
+    database: canvas_db
+  credentials:
+    username: canvas_user
+    password: canvas_password
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+# Kafka
+kafka:
+  enabled: true
+  name: kafka
+  image:
+    repository: apache/kafka
+    tag: "3.9.0"
+  service:
+    type: ClusterIP
+    port: 9092
+  persistence:
+    enabled: true
+    size: 3Gi
+    storageClass: "standard"
+  config:
+    brokerId: 1
+    replicationFactor: 1
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "512Mi"
+      cpu: "400m"
+
+# Django settings (for configmap)
+django:
+  secretKey: "django-insecure-change-this-in-production-k8s-secret-key-12345"
+
+# Django App reference (for configmap/secrets)
+djangoApp:
+  name: django-app
+
+# Ingress
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Forwarded-Proto https;
+      proxy_set_header X-Forwarded-Host $host;
+  hosts:
+    - host: testops.thduc.tech
+      paths:
+        - path: /
+          pathType: Prefix
+          service: django-app
+          port: 8000
+  tls: []
+
+# Security
+rbac:
+  enabled: true
+
+# Secrets
+secrets:
+  geminiApiKey: "YOUR_GEMINI_API_KEY_HERE"
+  googleOauth2Key: ""
+  googleOauth2Secret: ""
+  grafanaCloudApiKey: ""
+
+# Monitoring
+monitoring:
+  grafana:
+    prometheusUrl: ""

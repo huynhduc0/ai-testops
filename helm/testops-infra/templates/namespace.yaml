@@ -1,4 +1,3 @@
-{{- if .Values.sharedResources.enabled }}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -8,4 +7,3 @@ metadata:
     {{- include "ai-testops.labels" . | nindent 4 }}
   annotations:
     argocd.argoproj.io/sync-wave: "-3"
-{{- end }}

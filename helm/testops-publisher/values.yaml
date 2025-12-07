@@ -1,0 +1,42 @@
+# Default values for testops-publisher
+
+namespace: testops
+
+# Global image settings
+image:
+  pullPolicy: Always
+
+# Django Application
+djangoApp:
+  name: django-app
+  replicaCount: 1
+  image:
+    repository: vanlahuynhduc/ai-testops
+    tag: "675cc00"
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "200m"
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# External dependencies (deployed by testops-infra)
+postgres:
+  name: postgres
+  service:
+    port: 5432
+
+kafka:
+  name: kafka
+  service:
+    port: 9092

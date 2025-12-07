@@ -57,31 +57,71 @@ jobs:
           argocd:
             - 'argocd/**'
 
-    - name: Bump Helm chart version
+    - name: Bump Helm chart versions
       id: chart_version
       run: |
-        # Get current chart version
-        CURRENT_VERSION=$(grep '^version:' helm/ai-testops/Chart.yaml | awk '{print $2}')
-        echo "Current chart version: $CURRENT_VERSION"
+        echo "Checking for chart changes..."
         
-        if [ "${{ steps.changes.outputs.django }}" == "true" ] || [ "${{ steps.changes.outputs.consumer }}" == "true" ] || [ "${{ steps.changes.outputs.helm }}" == "true" ] || [ "${{ steps.changes.outputs.argocd }}" == "true" ]; then
-          # Bump patch version (e.g., 1.0.1 -> 1.0.2)
+        # Initialize flags
+        BUMP_INFRA=false
+        BUMP_PUBLISHER=false
+        BUMP_CONSUMER=false
+        
+        # Check if we need to bump any charts
+        if [ "${{ steps.changes.outputs.django }}" == "true" ] || [ "${{ steps.changes.outputs.helm }}" == "true" ]; then
+          BUMP_PUBLISHER=true
+        fi
+        
+        if [ "${{ steps.changes.outputs.consumer }}" == "true" ] || [ "${{ steps.changes.outputs.helm }}" == "true" ]; then
+          BUMP_CONSUMER=true
+        fi
+        
+        if [ "${{ steps.changes.outputs.helm }}" == "true" ] || [ "${{ steps.changes.outputs.argocd }}" == "true" ]; then
+          BUMP_INFRA=true
+        fi
+        
+        # Bump testops-infra
+        if [ "$BUMP_INFRA" == "true" ]; then
+          CURRENT_VERSION=$(grep '^version:' helm/testops-infra/Chart.yaml | awk '{print $2}')
           IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
           NEW_PATCH=$((patch + 1))
-          NEW_VERSION="${major}.${minor}.${NEW_PATCH}"
-          
-          echo "New chart version: $NEW_VERSION"
-          echo "CHART_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
-          
-          # Update Chart.yaml
-          sed -i "s/^version:.*/version: $NEW_VERSION/" helm/ai-testops/Chart.yaml
-          # Only update appVersion if django changed (as it represents the main app)
-          if [ "${{ steps.changes.outputs.django }}" == "true" ]; then
-            sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.VERSION }}\"/" helm/ai-testops/Chart.yaml
-          fi
+          INFRA_VERSION="${major}.${minor}.${NEW_PATCH}"
+          sed -i "s/^version:.*/version: $INFRA_VERSION/" helm/testops-infra/Chart.yaml
+          echo "INFRA_VERSION=$INFRA_VERSION" >> $GITHUB_OUTPUT
+          echo "Bumped testops-infra: $CURRENT_VERSION -> $INFRA_VERSION"
         else
-          echo "No changes requiring chart bump. Using current version."
-          echo "CHART_VERSION=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          INFRA_VERSION=$(grep '^version:' helm/testops-infra/Chart.yaml | awk '{print $2}')
+          echo "INFRA_VERSION=$INFRA_VERSION" >> $GITHUB_OUTPUT
+        fi
+        
+        # Bump testops-publisher
+        if [ "$BUMP_PUBLISHER" == "true" ]; then
+          CURRENT_VERSION=$(grep '^version:' helm/testops-publisher/Chart.yaml | awk '{print $2}')
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          NEW_PATCH=$((patch + 1))
+          PUBLISHER_VERSION="${major}.${minor}.${NEW_PATCH}"
+          sed -i "s/^version:.*/version: $PUBLISHER_VERSION/" helm/testops-publisher/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.VERSION }}\"/" helm/testops-publisher/Chart.yaml
+          echo "PUBLISHER_VERSION=$PUBLISHER_VERSION" >> $GITHUB_OUTPUT
+          echo "Bumped testops-publisher: $CURRENT_VERSION -> $PUBLISHER_VERSION"
+        else
+          PUBLISHER_VERSION=$(grep '^version:' helm/testops-publisher/Chart.yaml | awk '{print $2}')
+          echo "PUBLISHER_VERSION=$PUBLISHER_VERSION" >> $GITHUB_OUTPUT
+        fi
+        
+        # Bump testops-consumer
+        if [ "$BUMP_CONSUMER" == "true" ]; then
+          CURRENT_VERSION=$(grep '^version:' helm/testops-consumer/Chart.yaml | awk '{print $2}')
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          NEW_PATCH=$((patch + 1))
+          CONSUMER_VERSION="${major}.${minor}.${NEW_PATCH}"
+          sed -i "s/^version:.*/version: $CONSUMER_VERSION/" helm/testops-consumer/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.VERSION }}\"/" helm/testops-consumer/Chart.yaml
+          echo "CONSUMER_VERSION=$CONSUMER_VERSION" >> $GITHUB_OUTPUT
+          echo "Bumped testops-consumer: $CURRENT_VERSION -> $CONSUMER_VERSION"
+        else
+          CONSUMER_VERSION=$(grep '^version:' helm/testops-consumer/Chart.yaml | awk '{print $2}')
+          echo "CONSUMER_VERSION=$CONSUMER_VERSION" >> $GITHUB_OUTPUT
         fi
     
     - name: Build and push Django app image
@@ -114,12 +154,12 @@ jobs:
       run: |
         if [ "${{ steps.changes.outputs.django }}" == "true" ]; then
           echo "Updating Django app image tag to ${{ steps.version.outputs.VERSION }}"
-          sed -i "/djangoApp:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/ai-testops/values.yaml
+          sed -i "/djangoApp:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/testops-publisher/values.yaml
         fi
         
         if [ "${{ steps.changes.outputs.consumer }}" == "true" ]; then
           echo "Updating Consumer image tag to ${{ steps.version.outputs.VERSION }}"
-          sed -i "/consumer:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/ai-testops/values.yaml
+          sed -i "/consumer:/,/service:/ s|tag:.*|tag: \"${{ steps.version.outputs.VERSION }}\"|" helm/testops-consumer/values.yaml
         fi
         
     - name: Commit and push changes
@@ -127,23 +167,44 @@ jobs:
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add helm/ai-testops/values.yaml helm/ai-testops/Chart.yaml
+        git add helm/*/values.yaml helm/*/Chart.yaml
         if git diff --staged --quiet; then
           echo "No changes to commit"
           exit 0
         fi
-        git commit -m "chore: bump chart to v${{ steps.chart_version.outputs.CHART_VERSION }} with images ${{ steps.version.outputs.VERSION }} [skip ci]"
+        git commit -m "chore: bump charts (infra:${{ steps.chart_version.outputs.INFRA_VERSION }}, publisher:${{ steps.chart_version.outputs.PUBLISHER_VERSION }}, consumer:${{ steps.chart_version.outputs.CONSUMER_VERSION }}) [skip ci]"
         git pull --rebase
         git push origin main
     
-    - name: Create and push Git tag
+    - name: Create and push Git tags
       if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         
-        git tag -a "v${{ steps.chart_version.outputs.CHART_VERSION }}" -m "Release v${{ steps.chart_version.outputs.CHART_VERSION }} (images: ${{ steps.version.outputs.VERSION }})"
-        git push origin "v${{ steps.chart_version.outputs.CHART_VERSION }}"
+        # Tag for infra
+        if git rev-parse "testops-infra-${{ steps.chart_version.outputs.INFRA_VERSION }}" >/dev/null 2>&1; then
+          echo "Tag testops-infra-${{ steps.chart_version.outputs.INFRA_VERSION }} already exists"
+        else
+          git tag -a "testops-infra-${{ steps.chart_version.outputs.INFRA_VERSION }}" -m "Release testops-infra ${{ steps.chart_version.outputs.INFRA_VERSION }}"
+          git push origin "testops-infra-${{ steps.chart_version.outputs.INFRA_VERSION }}"
+        fi
+        
+        # Tag for publisher
+        if git rev-parse "testops-publisher-${{ steps.chart_version.outputs.PUBLISHER_VERSION }}" >/dev/null 2>&1; then
+          echo "Tag testops-publisher-${{ steps.chart_version.outputs.PUBLISHER_VERSION }} already exists"
+        else
+          git tag -a "testops-publisher-${{ steps.chart_version.outputs.PUBLISHER_VERSION }}" -m "Release testops-publisher ${{ steps.chart_version.outputs.PUBLISHER_VERSION }}"
+          git push origin "testops-publisher-${{ steps.chart_version.outputs.PUBLISHER_VERSION }}"
+        fi
+        
+        # Tag for consumer
+        if git rev-parse "testops-consumer-${{ steps.chart_version.outputs.CONSUMER_VERSION }}" >/dev/null 2>&1; then
+          echo "Tag testops-consumer-${{ steps.chart_version.outputs.CONSUMER_VERSION }} already exists"
+        else
+          git tag -a "testops-consumer-${{ steps.chart_version.outputs.CONSUMER_VERSION }}" -m "Release testops-consumer ${{ steps.chart_version.outputs.CONSUMER_VERSION }}"
+          git push origin "testops-consumer-${{ steps.chart_version.outputs.CONSUMER_VERSION }}"
+        fi
     
     - name: Install Helm
       if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
@@ -168,16 +229,26 @@ jobs:
         # Create simple index.html
         cat > index.html << 'EOF'
         <!DOCTYPE html>
-        <html><head><meta charset="UTF-8"><title>AI TestOps Helm Charts</title></head>
-        <body><h1>AI TestOps Helm Repository</h1>
+        <html><head><meta charset="UTF-8"><title>TestOps Helm Charts</title></head>
+        <body><h1>TestOps Helm Repository</h1>
         <p>Repository: <code>https://huynhduc0.github.io/ai-testops</code></p>
-        <p>Updated: TIMESTAMP</p></body></html>
+        <p>Updated: TIMESTAMP</p>
+        <h2>Charts:</h2>
+        <ul>
+          <li>testops-infra: INFRA_VERSION</li>
+          <li>testops-publisher: PUBLISHER_VERSION</li>
+          <li>testops-consumer: CONSUMER_VERSION</li>
+        </ul>
+        </body></html>
         EOF
         
-        sed -i "s/TIMESTAMP/$(date -u +"%Y-%m-%d %H:%M:%S UTC") - v${{ steps.chart_version.outputs.CHART_VERSION }}/" index.html
+        sed -i "s/TIMESTAMP/$(date -u +"%Y-%m-%d %H:%M:%S UTC")/" index.html
+        sed -i "s/INFRA_VERSION/${{ steps.chart_version.outputs.INFRA_VERSION }}/" index.html
+        sed -i "s/PUBLISHER_VERSION/${{ steps.chart_version.outputs.PUBLISHER_VERSION }}/" index.html
+        sed -i "s/CONSUMER_VERSION/${{ steps.chart_version.outputs.CONSUMER_VERSION }}/" index.html
         
         git add index.html
-        git commit -m "Update index.html for v${{ steps.chart_version.outputs.CHART_VERSION }}" || echo "No changes"
+        git commit -m "Update index.html (infra:${{ steps.chart_version.outputs.INFRA_VERSION }}, publisher:${{ steps.chart_version.outputs.PUBLISHER_VERSION }}, consumer:${{ steps.chart_version.outputs.CONSUMER_VERSION }})" || echo "No changes"
         git push origin gh-pages
         
         git checkout main
@@ -186,27 +257,28 @@ jobs:
       if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v${{ steps.chart_version.outputs.CHART_VERSION }}
-        name: Release v${{ steps.chart_version.outputs.CHART_VERSION }}
+        tag_name: testops-${{ steps.version.outputs.VERSION }}
+        name: Release ${{ steps.version.outputs.VERSION }}
         body: |
-          ## Chart Version: v${{ steps.chart_version.outputs.CHART_VERSION }}
+          ## Release ${{ steps.version.outputs.VERSION }}
+          
+          ### Chart Versions
+          - testops-infra: `${{ steps.chart_version.outputs.INFRA_VERSION }}`
+          - testops-publisher: `${{ steps.chart_version.outputs.PUBLISHER_VERSION }}`
+          - testops-consumer: `${{ steps.chart_version.outputs.CONSUMER_VERSION }}`
           
           ### Image Version
           - Commit SHA: `${{ steps.version.outputs.VERSION }}`
           
           ### Updated Components
-          ${{ steps.changes.outputs.django == 'true' && '✅ Django app' || '' }}
+          ${{ steps.changes.outputs.django == 'true' && '✅ Django app (publisher)' || '' }}
           ${{ steps.changes.outputs.consumer == 'true' && '✅ Consumer' || '' }}
-          ${{ steps.changes.outputs.helm == 'true' && '✅ Helm chart' || '' }}
+          ${{ steps.changes.outputs.helm == 'true' && '✅ Helm charts' || '' }}
           ${{ steps.changes.outputs.argocd == 'true' && '✅ ArgoCD config' || '' }}
           
           ### Docker Images
           - `${{ secrets.DOCKER_USERNAME }}/ai-testops:${{ steps.version.outputs.VERSION }}`
           - `${{ secrets.DOCKER_USERNAME }}/ai-testops-consumer:${{ steps.version.outputs.VERSION }}`
-          
-          ### Helm Chart
-          - Chart: `ai-testops`
-          - Version: `${{ steps.chart_version.outputs.CHART_VERSION }}`
         draft: false
         prerelease: false
       env:
