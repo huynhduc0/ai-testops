@@ -142,31 +142,42 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         
-        # Use PAT token to trigger helm-release workflow
-        git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
-        
         git tag -a "v${{ steps.chart_version.outputs.CHART_VERSION }}" -m "Release v${{ steps.chart_version.outputs.CHART_VERSION }} (images: ${{ steps.version.outputs.VERSION }})"
         git push origin "v${{ steps.chart_version.outputs.CHART_VERSION }}"
     
-    - name: Trigger ArgoCD by updating gh-pages
+    - name: Install Helm
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
+      uses: azure/setup-helm@v3
+      with:
+        version: v3.13.0
+    
+    - name: Run chart-releaser to update index.yaml
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
+      uses: helm/chart-releaser-action@v1.6.0
+      with:
+        charts_dir: helm
+      env:
+        CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    
+    - name: Update index.html on gh-pages to trigger ArgoCD
       if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
       run: |
-        # Wait a bit for chart-releaser to finish
-        sleep 10
-        
         git fetch origin gh-pages
         git checkout gh-pages
         
-        # Update timestamp file to trigger pages rebuild
-        cat > .argocd-trigger << EOF
-        Last Release: v${{ steps.chart_version.outputs.CHART_VERSION }}
-        Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-        Commit: ${{ steps.version.outputs.VERSION }}
-        Run: ${{ github.run_id }}
+        # Create simple index.html
+        cat > index.html << 'EOF'
+        <!DOCTYPE html>
+        <html><head><meta charset="UTF-8"><title>AI TestOps Helm Charts</title></head>
+        <body><h1>AI TestOps Helm Repository</h1>
+        <p>Repository: <code>https://huynhduc0.github.io/ai-testops</code></p>
+        <p>Updated: TIMESTAMP</p></body></html>
         EOF
         
-        git add .argocd-trigger
-        git commit -m "trigger: v${{ steps.chart_version.outputs.CHART_VERSION }} [${{ github.run_id }}]"
+        sed -i "s/TIMESTAMP/$(date -u +"%Y-%m-%d %H:%M:%S UTC") - v${{ steps.chart_version.outputs.CHART_VERSION }}/" index.html
+        
+        git add index.html
+        git commit -m "Update index.html for v${{ steps.chart_version.outputs.CHART_VERSION }}" || echo "No changes"
         git push origin gh-pages
         
         git checkout main
