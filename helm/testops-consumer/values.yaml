@@ -8,6 +8,7 @@ image:
 
 # Test Execute Consumer
 consumer:
+  enabled: true
   name: test-execute-consumer
   replicaCount: 1
   image:
