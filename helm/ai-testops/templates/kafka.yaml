@@ -88,6 +88,8 @@ metadata:
   labels:
     app: {{ .Values.kafka.name }}
     {{- include "ai-testops.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   type: {{ .Values.kafka.service.type }}
   ports:

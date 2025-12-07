@@ -65,6 +65,8 @@ metadata:
   labels:
     app: {{ .Values.consumer.name }}
     {{- include "ai-testops.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   type: {{ .Values.consumer.service.type }}
   ports:

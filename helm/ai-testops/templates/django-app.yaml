@@ -144,6 +144,8 @@ metadata:
   labels:
     app: {{ .Values.djangoApp.name }}
     {{- include "ai-testops.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   type: {{ .Values.djangoApp.service.type }}
   ports:
