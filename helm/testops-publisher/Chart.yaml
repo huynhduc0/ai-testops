@@ -2,8 +2,8 @@ apiVersion: v2
 name: testops-publisher
 description: Publisher service for TestOps platform
 type: application
-version: 1.2.4
-appVersion: "dac3baa"
+version: 1.2.5
+appVersion: "3b98f19"
 keywords:
   - ai
   - testing
