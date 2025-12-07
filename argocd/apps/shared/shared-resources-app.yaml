@@ -42,12 +42,15 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - SyncTimeout=1200
+      - SkipDryRunOnMissingResource=true
     retry:
       limit: 5
       backoff:
         duration: 5s
         factor: 2
-        maxDuration: 3m
+        maxDuration: 20m
   
   ignoreDifferences:
     - group: ""

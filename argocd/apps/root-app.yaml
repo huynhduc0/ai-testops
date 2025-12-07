@@ -28,3 +28,6 @@ spec:
       allowEmpty: false
     syncOptions:
       - CreateNamespace=true
+      - SyncTimeout=1200
+      - RespectIgnoreDifferences=true
+      - SkipDryRunOnMissingResource=true
