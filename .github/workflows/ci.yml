@@ -177,3 +177,20 @@ jobs:
         prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Update gh-pages to trigger ArgoCD
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
+      run: |
+        git fetch origin gh-pages:gh-pages 2>/dev/null || git checkout --orphan gh-pages
+        git checkout gh-pages
+        
+        # Update timestamp file to trigger pages build
+        echo "Last updated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" > .argocd-trigger
+        echo "Release: v${{ steps.chart_version.outputs.CHART_VERSION }}" >> .argocd-trigger
+        echo "Commit: ${{ steps.version.outputs.VERSION }}" >> .argocd-trigger
+        
+        git add .argocd-trigger
+        git commit -m "trigger: v${{ steps.chart_version.outputs.CHART_VERSION }} - $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+        git push origin gh-pages
+        
+        git checkout main
