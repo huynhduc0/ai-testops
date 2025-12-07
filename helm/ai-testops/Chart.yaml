@@ -11,8 +11,8 @@ keywords:
   - microservices
   - keda
 maintainers:
-  - name: AI TestOps Team
-    email: team@ai-testops.example.com
+  - name: Duc Truong
+    email: thduc.dev@gmail.com
 annotations:
   "keda.sh/required": "true"
   "keda.sh/installation": |
