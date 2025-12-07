@@ -38,7 +38,7 @@ spec:
   - from:
     - podSelector:
         matchLabels:
-          app: django-app
+          app: testops-publisher
     ports:
     - protocol: TCP
       port: 5432
@@ -65,7 +65,7 @@ spec:
   - from:
     - podSelector:
         matchLabels:
-          app: django-app
+          app: testops-publisher
     ports:
     - protocol: TCP
       port: 9092
@@ -112,7 +112,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: django-app
+      app: testops-publisher
   policyTypes:
   - Ingress
   ingress:

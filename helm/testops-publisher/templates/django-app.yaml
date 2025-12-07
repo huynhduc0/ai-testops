@@ -20,7 +20,7 @@ spec:
         app: {{ .Values.djangoApp.name }}
         version: v1
     spec:
-      serviceAccountName: django-app-sa
+      serviceAccountName: testops-publisher-sa
       initContainers:
       - name: wait-for-postgres
         image: busybox:1.28
@@ -29,7 +29,7 @@ spec:
         image: busybox:1.28
         command: ['sh', '-c', 'until nc -z {{ .Values.kafka.name }}.{{ .Values.namespace }}.svc.cluster.local {{ .Values.kafka.service.port }}; do echo waiting for kafka; sleep 2; done;']
       containers:
-      - name: django-app
+      - name: testops-publisher
         image: "{{ .Values.djangoApp.image.repository }}:{{ .Values.djangoApp.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: 

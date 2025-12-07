@@ -8,7 +8,8 @@ image:
 
 # Django Application
 djangoApp:
-  name: django-app
+  enabled: true
+  name: testops-publisher
   replicaCount: 1
   image:
     repository: vanlahuynhduc/ai-testops
@@ -54,6 +55,6 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-          service: django-app
+          service: testops-publisher
           port: 8000
   tls: []

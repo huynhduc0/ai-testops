@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: testops-postdeploy
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: wide
+  
+  source:
+    repoURL: https://huynhduc0.github.io/ai-testops
+    chart: testops-postdeploy
+    targetRevision: "1.*.*"
+    helm:
+      values: |
+        # Enable NetworkPolicies
+        networkPolicies:
+          enabled: true
+          allowDjangoToPostgres: true
+          allowDjangoToKafka: true
+          allowConsumerToKafka: true
+          allowExternalToDjango: true
+          denyAllByDefault: false
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: testops
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - SyncTimeout=1200
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 20m
+
