@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://huynhduc0.github.io/ai-testops
     chart: ai-testops
-    targetRevision: "1.0.*"
+    targetRevision: "1.*.*"
     helm:
       values: |
         # Enable only Consumer

@@ -15,7 +15,7 @@ spec:
     # Helm Repository (after GitHub Pages setup)
     repoURL: https://huynhduc0.github.io/ai-testops
     chart: ai-testops
-    targetRevision: "1.0.*"  # Auto-update to latest 1.0.x version
+    targetRevision: "1.*.*"  # Auto-update to latest 1.0.x version
     
     helm:
       valueFiles:
