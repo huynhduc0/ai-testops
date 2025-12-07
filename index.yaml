@@ -267,6 +267,19 @@ entries:
     version: 1.0.2
   testops-consumer:
   - apiVersion: v2
+    appVersion: 2ad4a26
+    created: "2025-12-07T12:05:50.696713738Z"
+    description: Consumer service for TestOps platform
+    digest: 43f73fcc520015ec066bd60921b1ab8c7346bb12447b0e1eeb07fa3bcf70b939
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-consumer
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-consumer-1.0.6/testops-consumer-1.0.6.tgz
+    version: 1.0.6
+  - apiVersion: v2
     appVersion: 3b98f19
     created: "2025-12-07T12:02:07.542653907Z"
     description: Consumer service for TestOps platform
@@ -332,6 +345,20 @@ entries:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-consumer-1.0.1/testops-consumer-1.0.1.tgz
     version: 1.0.1
   testops-infra:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-12-07T12:05:50.885672562Z"
+    description: Infrastructure components for TestOps platform (PostgreSQL, Kafka,
+      shared resources)
+    digest: ca52196ff74d24106c7dccc414607ff009c30894fcde94b37a055c03db817273
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-infra
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-infra-1.0.7/testops-infra-1.0.7.tgz
+    version: 1.0.7
   - apiVersion: v2
     appVersion: 1.0.0
     created: "2025-12-07T12:02:07.680903682Z"
@@ -417,6 +444,30 @@ entries:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-infra-1.0.1/testops-infra-1.0.1.tgz
     version: 1.0.1
   testops-publisher:
+  - annotations:
+      keda.sh/installation: |
+        Install KEDA before deploying this chart:
+        kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml
+      keda.sh/required: "true"
+    apiVersion: v2
+    appVersion: 2ad4a26
+    created: "2025-12-07T12:05:51.088971444Z"
+    description: Publisher service for TestOps platform
+    digest: 1e108f87d76f4f553ee0e7f77fd5877f0f0c3e779069b821b30448acb39ac0f8
+    keywords:
+    - ai
+    - testing
+    - kafka
+    - microservices
+    - keda
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-publisher
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.6/testops-publisher-1.2.6.tgz
+    version: 1.2.6
   - annotations:
       keda.sh/installation: |
         Install KEDA before deploying this chart:
@@ -537,4 +588,4 @@ entries:
     urls:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.1/testops-publisher-1.2.1.tgz
     version: 1.2.1
-generated: "2025-12-07T12:02:07.787005378Z"
+generated: "2025-12-07T12:05:51.089042257Z"
