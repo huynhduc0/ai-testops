@@ -51,6 +51,8 @@ jobs:
             - 'test-execute-consumer/**'
           helm:
             - 'helm/**'
+          argocd:
+            - 'argocd/**'
 
     - name: Bump Helm chart version
       id: chart_version
@@ -59,7 +61,7 @@ jobs:
         CURRENT_VERSION=$(grep '^version:' helm/ai-testops/Chart.yaml | awk '{print $2}')
         echo "Current chart version: $CURRENT_VERSION"
         
-        if [ "${{ steps.changes.outputs.django }}" == "true" ] || [ "${{ steps.changes.outputs.consumer }}" == "true" ] || [ "${{ steps.changes.outputs.helm }}" == "true" ]; then
+        if [ "${{ steps.changes.outputs.django }}" == "true" ] || [ "${{ steps.changes.outputs.consumer }}" == "true" ] || [ "${{ steps.changes.outputs.helm }}" == "true" ] || [ "${{ steps.changes.outputs.argocd }}" == "true" ]; then
           # Bump patch version (e.g., 1.0.1 -> 1.0.2)
           IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
           NEW_PATCH=$((patch + 1))
@@ -118,7 +120,7 @@ jobs:
         fi
         
     - name: Commit and push changes
-      if: steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true'
+      if: steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true'
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -132,7 +134,7 @@ jobs:
         git push origin main
     
     - name: Create and push Git tag
-      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true') && github.ref == 'refs/heads/main'
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
