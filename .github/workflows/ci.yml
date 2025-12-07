@@ -182,7 +182,16 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         
-        # Tag for infra
+        # Main release tag
+        RELEASE_TAG="testops-${{ steps.version.outputs.VERSION }}"
+        if git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
+          echo "Tag $RELEASE_TAG already exists"
+        else
+          git tag -a "$RELEASE_TAG" -m "Release ${{ steps.version.outputs.VERSION }}"
+          git push origin "$RELEASE_TAG"
+        fi
+        
+        # Tag for infra chart
         if git rev-parse "testops-infra-${{ steps.chart_version.outputs.INFRA_VERSION }}" >/dev/null 2>&1; then
           echo "Tag testops-infra-${{ steps.chart_version.outputs.INFRA_VERSION }} already exists"
         else
@@ -190,7 +199,7 @@ jobs:
           git push origin "testops-infra-${{ steps.chart_version.outputs.INFRA_VERSION }}"
         fi
         
-        # Tag for publisher
+        # Tag for publisher chart
         if git rev-parse "testops-publisher-${{ steps.chart_version.outputs.PUBLISHER_VERSION }}" >/dev/null 2>&1; then
           echo "Tag testops-publisher-${{ steps.chart_version.outputs.PUBLISHER_VERSION }} already exists"
         else
@@ -198,7 +207,7 @@ jobs:
           git push origin "testops-publisher-${{ steps.chart_version.outputs.PUBLISHER_VERSION }}"
         fi
         
-        # Tag for consumer
+        # Tag for consumer chart
         if git rev-parse "testops-consumer-${{ steps.chart_version.outputs.CONSUMER_VERSION }}" >/dev/null 2>&1; then
           echo "Tag testops-consumer-${{ steps.chart_version.outputs.CONSUMER_VERSION }} already exists"
         else
@@ -257,8 +266,8 @@ jobs:
       if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v${{ steps.version.outputs.VERSION }}
-        name: Release ${{ steps.version.outputs.VERSION }}
+        tag_name: testops-${{ steps.version.outputs.VERSION }}
+        name: Release testops-${{ steps.version.outputs.VERSION }}
         body: |
           ## 📦 Chart Versions
           - **testops-infra**: `${{ steps.chart_version.outputs.INFRA_VERSION }}`

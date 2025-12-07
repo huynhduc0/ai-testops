@@ -14,13 +14,11 @@ spec:
     targetRevision: "1.*.*"
     helm:
       values: |
-        # Enable only shared resources
+        # Enable only shared resources (secrets, configmap, rbac)
         postgres:
           enabled: false
         kafka:
           enabled: false
-        ingress:
-          enabled: true
         rbac:
           enabled: true
   
