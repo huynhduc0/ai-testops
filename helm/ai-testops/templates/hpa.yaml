@@ -1,4 +1,4 @@
-{{- if .Values.djangoApp.autoscaling.enabled }}
+{{- if and .Values.djangoApp.enabled .Values.djangoApp.autoscaling.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -47,7 +47,7 @@ spec:
       selectPolicy: Max
 {{- end }}
 ---
-{{- if .Values.consumer.autoscaling.enabled }}
+{{- if and .Values.consumer.enabled .Values.consumer.autoscaling.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:

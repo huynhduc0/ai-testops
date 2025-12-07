@@ -3,6 +3,10 @@
 
 namespace: testops
 
+# Shared resources control
+sharedResources:
+  enabled: true  # namespace, secrets, configmaps
+
 # Global image settings
 image:
   pullPolicy: Always

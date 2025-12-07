@@ -15,6 +15,8 @@ spec:
     helm:
       values: |
         # Enable only Kafka
+        sharedResources:
+          enabled: false
         postgres:
           enabled: false
         kafka:
@@ -28,6 +30,8 @@ spec:
         ingress:
           enabled: false
         keda:
+          enabled: false
+        rbac:
           enabled: false
         networkPolicies:
           enabled: false
