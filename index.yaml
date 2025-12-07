@@ -267,6 +267,19 @@ entries:
     version: 1.0.2
   testops-consumer:
   - apiVersion: v2
+    appVersion: c4c1320
+    created: "2025-12-07T12:51:17.235795592Z"
+    description: Consumer service for TestOps platform
+    digest: e6feced1b716abe20ab8b4f84622ec0cd5aa33f09baa787ad291b90236cf0f70
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-consumer
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-consumer-1.0.10/testops-consumer-1.0.10.tgz
+    version: 1.0.10
+  - apiVersion: v2
     appVersion: "4922536"
     created: "2025-12-07T12:47:36.602174854Z"
     description: Consumer service for TestOps platform
@@ -384,6 +397,32 @@ entries:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-consumer-1.0.1/testops-consumer-1.0.1.tgz
     version: 1.0.1
   testops-infra:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-12-07T12:51:17.355912427Z"
+    dependencies:
+    - condition: postgres.enabled
+      name: postgres
+      repository: ""
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: ""
+      version: 1.0.0
+    - name: shared
+      repository: ""
+      version: 1.0.0
+    description: Infrastructure components for TestOps platform (PostgreSQL, Kafka,
+      shared resources)
+    digest: afb3af39d877b85622c90dbd55619918ef0ed8b6fb522caadf763e614764a6c6
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-infra
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-infra-1.0.11/testops-infra-1.0.11.tgz
+    version: 1.0.11
   - apiVersion: v2
     appVersion: 1.0.0
     created: "2025-12-07T12:47:36.729941001Z"
@@ -551,6 +590,19 @@ entries:
   testops-postdeploy:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2025-12-07T12:51:17.542029577Z"
+    description: Post-deployment resources for TestOps (NetworkPolicies, Monitoring)
+    digest: f14e7e69a651804f08e52999afc8778f2352cdf83bad820a93909bf18473de80
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-postdeploy
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-postdeploy-1.0.3/testops-postdeploy-1.0.3.tgz
+    version: 1.0.3
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2025-12-07T12:47:36.861774756Z"
     description: Post-deployment resources for TestOps (NetworkPolicies, Monitoring)
     digest: bc968b1565bb052b2000e0835e46aa914e6efa48f6075f551640ad3f9c30aca9
@@ -576,6 +628,30 @@ entries:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-postdeploy-1.0.1/testops-postdeploy-1.0.1.tgz
     version: 1.0.1
   testops-publisher:
+  - annotations:
+      keda.sh/installation: |
+        Install KEDA before deploying this chart:
+        kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml
+      keda.sh/required: "true"
+    apiVersion: v2
+    appVersion: c4c1320
+    created: "2025-12-07T12:51:17.667282576Z"
+    description: Publisher service for TestOps platform
+    digest: 31816e3ddbeb1a9e4b36339ed06298d9ecba43bda144301e7d096a92a9e91adf
+    keywords:
+    - ai
+    - testing
+    - kafka
+    - microservices
+    - keda
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-publisher
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.10/testops-publisher-1.2.10.tgz
+    version: 1.2.10
   - annotations:
       keda.sh/installation: |
         Install KEDA before deploying this chart:
@@ -792,4 +868,4 @@ entries:
     urls:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.1/testops-publisher-1.2.1.tgz
     version: 1.2.1
-generated: "2025-12-07T12:47:37.018208395Z"
+generated: "2025-12-07T12:51:17.667467314Z"
