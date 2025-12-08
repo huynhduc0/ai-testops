@@ -2,8 +2,8 @@ apiVersion: v2
 name: testops-consumer
 description: Consumer service for TestOps platform
 type: application
-version: 1.1.0
-appVersion: "97df834"
+version: 1.1.1
+appVersion: "96866e2"
 maintainers:
   - name: Duc Truong
     email: thduc.dev@gmail.com
