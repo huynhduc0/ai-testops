@@ -1,0 +1,300 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_all_versions:
+        description: 'Bump all chart versions'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  manual-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.PAT_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Set git identity
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+    
+    - name: Bump all chart versions
+      if: inputs.bump_all_versions == true
+      id: bump_versions
+      run: |
+        echo "Bumping all chart versions..."
+        
+        # Bump testops-infra
+        CURRENT_VERSION=$(grep '^version:' helm/testops-infra/Chart.yaml | awk '{print $2}')
+        IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+        NEW_PATCH=$((patch + 1))
+        INFRA_VERSION="${major}.${minor}.${NEW_PATCH}"
+        sed -i "s/^version:.*/version: $INFRA_VERSION/" helm/testops-infra/Chart.yaml
+        echo "INFRA_VERSION=$INFRA_VERSION" >> $GITHUB_OUTPUT
+        echo "Bumped testops-infra: $CURRENT_VERSION -> $INFRA_VERSION"
+        
+        # Bump testops-publisher
+        CURRENT_VERSION=$(grep '^version:' helm/testops-publisher/Chart.yaml | awk '{print $2}')
+        IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+        NEW_PATCH=$((patch + 1))
+        PUBLISHER_VERSION="${major}.${minor}.${NEW_PATCH}"
+        sed -i "s/^version:.*/version: $PUBLISHER_VERSION/" helm/testops-publisher/Chart.yaml
+        echo "PUBLISHER_VERSION=$PUBLISHER_VERSION" >> $GITHUB_OUTPUT
+        echo "Bumped testops-publisher: $CURRENT_VERSION -> $PUBLISHER_VERSION"
+        
+        # Bump testops-consumer
+        CURRENT_VERSION=$(grep '^version:' helm/testops-consumer/Chart.yaml | awk '{print $2}')
+        IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+        NEW_PATCH=$((patch + 1))
+        CONSUMER_VERSION="${major}.${minor}.${NEW_PATCH}"
+        sed -i "s/^version:.*/version: $CONSUMER_VERSION/" helm/testops-consumer/Chart.yaml
+        echo "CONSUMER_VERSION=$CONSUMER_VERSION" >> $GITHUB_OUTPUT
+        echo "Bumped testops-consumer: $CURRENT_VERSION -> $CONSUMER_VERSION"
+        
+        # Bump testops-postdeploy
+        CURRENT_VERSION=$(grep '^version:' helm/testops-postdeploy/Chart.yaml | awk '{print $2}')
+        IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+        NEW_PATCH=$((patch + 1))
+        POSTDEPLOY_VERSION="${major}.${minor}.${NEW_PATCH}"
+        sed -i "s/^version:.*/version: $POSTDEPLOY_VERSION/" helm/testops-postdeploy/Chart.yaml
+        echo "POSTDEPLOY_VERSION=$POSTDEPLOY_VERSION" >> $GITHUB_OUTPUT
+        echo "Bumped testops-postdeploy: $CURRENT_VERSION -> $POSTDEPLOY_VERSION"
+    
+    - name: Get current versions (if not bumped)
+      if: inputs.bump_all_versions == false
+      id: current_versions
+      run: |
+        INFRA_VERSION=$(grep '^version:' helm/testops-infra/Chart.yaml | awk '{print $2}')
+        PUBLISHER_VERSION=$(grep '^version:' helm/testops-publisher/Chart.yaml | awk '{print $2}')
+        CONSUMER_VERSION=$(grep '^version:' helm/testops-consumer/Chart.yaml | awk '{print $2}')
+        POSTDEPLOY_VERSION=$(grep '^version:' helm/testops-postdeploy/Chart.yaml | awk '{print $2}')
+        
+        echo "INFRA_VERSION=$INFRA_VERSION" >> $GITHUB_OUTPUT
+        echo "PUBLISHER_VERSION=$PUBLISHER_VERSION" >> $GITHUB_OUTPUT
+        echo "CONSUMER_VERSION=$CONSUMER_VERSION" >> $GITHUB_OUTPUT
+        echo "POSTDEPLOY_VERSION=$POSTDEPLOY_VERSION" >> $GITHUB_OUTPUT
+    
+    - name: Commit version changes
+      if: inputs.bump_all_versions == true
+      run: |
+        git add helm/*/Chart.yaml
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "chore: manual bump all charts (infra:${{ steps.bump_versions.outputs.INFRA_VERSION }}, publisher:${{ steps.bump_versions.outputs.PUBLISHER_VERSION }}, consumer:${{ steps.bump_versions.outputs.CONSUMER_VERSION }}, postdeploy:${{ steps.bump_versions.outputs.POSTDEPLOY_VERSION }}) [skip ci]"
+          git pull --rebase
+          git push origin main
+        fi
+    
+    - name: Create Git tags
+      if: inputs.bump_all_versions == true
+      run: |
+        INFRA_VERSION="${{ steps.bump_versions.outputs.INFRA_VERSION }}"
+        PUBLISHER_VERSION="${{ steps.bump_versions.outputs.PUBLISHER_VERSION }}"
+        CONSUMER_VERSION="${{ steps.bump_versions.outputs.CONSUMER_VERSION }}"
+        POSTDEPLOY_VERSION="${{ steps.bump_versions.outputs.POSTDEPLOY_VERSION }}"
+        
+        # Tag for infra chart
+        if ! git rev-parse "testops-infra-$INFRA_VERSION" >/dev/null 2>&1; then
+          git tag -a "testops-infra-$INFRA_VERSION" -m "Release testops-infra $INFRA_VERSION"
+          git push origin "testops-infra-$INFRA_VERSION"
+        fi
+        
+        # Tag for publisher chart
+        if ! git rev-parse "testops-publisher-$PUBLISHER_VERSION" >/dev/null 2>&1; then
+          git tag -a "testops-publisher-$PUBLISHER_VERSION" -m "Release testops-publisher $PUBLISHER_VERSION"
+          git push origin "testops-publisher-$PUBLISHER_VERSION"
+        fi
+        
+        # Tag for consumer chart
+        if ! git rev-parse "testops-consumer-$CONSUMER_VERSION" >/dev/null 2>&1; then
+          git tag -a "testops-consumer-$CONSUMER_VERSION" -m "Release testops-consumer $CONSUMER_VERSION"
+          git push origin "testops-consumer-$CONSUMER_VERSION"
+        fi
+        
+        # Tag for postdeploy chart
+        if ! git rev-parse "testops-postdeploy-$POSTDEPLOY_VERSION" >/dev/null 2>&1; then
+          git tag -a "testops-postdeploy-$POSTDEPLOY_VERSION" -m "Release testops-postdeploy $POSTDEPLOY_VERSION"
+          git push origin "testops-postdeploy-$POSTDEPLOY_VERSION"
+        fi
+    
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: v3.13.0
+    
+    - name: Update Helm dependencies
+      run: |
+        echo "Updating Helm dependencies for charts with dependencies..."
+        
+        # Update testops-infra dependencies (has prometheus subchart)
+        if [ -f "helm/testops-infra/Chart.yaml" ]; then
+          echo "Updating testops-infra dependencies..."
+          helm dependency update helm/testops-infra
+        fi
+        
+        # Commit updated Chart.lock if changed
+        if ! git diff --quiet helm/*/Chart.lock; then
+          git add helm/*/Chart.lock
+          git commit -m "chore: update Chart.lock files [skip ci]" || echo "No Chart.lock changes to commit"
+          git push origin main
+        fi
+    
+    - name: Run chart-releaser to update index.yaml
+      uses: helm/chart-releaser-action@v1.6.0
+      with:
+        charts_dir: helm
+      env:
+        CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    
+    - name: Verify chart-releaser output
+      run: |
+        echo "Checking chart-releaser output directory..."
+        ls -la .cr-release-packages/ 2>/dev/null || echo "No .cr-release-packages directory"
+        echo "Checking gh-pages branch for index.yaml..."
+        git fetch origin gh-pages
+        git show origin/gh-pages:index.yaml | head -20 || echo "index.yaml not found on gh-pages"
+    
+    - name: Update index.html on gh-pages
+      run: |
+        # Stash any local changes before switching branches
+        git stash
+        git fetch origin gh-pages
+        git checkout gh-pages
+        
+        # Determine versions to use
+        if [ "${{ inputs.bump_all_versions }}" == "true" ]; then
+          INFRA_VERSION="${{ steps.bump_versions.outputs.INFRA_VERSION }}"
+          PUBLISHER_VERSION="${{ steps.bump_versions.outputs.PUBLISHER_VERSION }}"
+          CONSUMER_VERSION="${{ steps.bump_versions.outputs.CONSUMER_VERSION }}"
+          POSTDEPLOY_VERSION="${{ steps.bump_versions.outputs.POSTDEPLOY_VERSION }}"
+        else
+          INFRA_VERSION="${{ steps.current_versions.outputs.INFRA_VERSION }}"
+          PUBLISHER_VERSION="${{ steps.current_versions.outputs.PUBLISHER_VERSION }}"
+          CONSUMER_VERSION="${{ steps.current_versions.outputs.CONSUMER_VERSION }}"
+          POSTDEPLOY_VERSION="${{ steps.current_versions.outputs.POSTDEPLOY_VERSION }}"
+        fi
+        
+        # Create index.html that dynamically reads index.yaml
+        cat > index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>TestOps Helm Charts</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+            .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            h1 { color: #333; border-bottom: 3px solid #007bff; padding-bottom: 10px; }
+            h2 { color: #555; margin-top: 30px; margin-bottom: 15px; }
+            .repo-info { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 15px 0; }
+            code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; }
+            .chart-section { margin: 20px 0; }
+            .versions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+            .version-badge { display: inline-block; background: #007bff; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px; }
+            .version-badge.old { background: #6c757d; }
+            #loading { text-align: center; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>📦 TestOps Helm Repository</h1>
+            <div class="repo-info">
+              <p><strong>Repository URL:</strong> <code>https://huynhduc0.github.io/ai-testops</code></p>
+              <p><strong>Last Updated:</strong> <span id="timestamp">-</span></p>
+            </div>
+            <div id="content">
+              <div id="loading">⏳ Loading chart versions...</div>
+            </div>
+          </div>
+          <script>
+            fetch('index.yaml')
+              .then(response => response.text())
+              .then(data => {
+                const timestamp = new Date().toLocaleString();
+                document.getElementById('timestamp').textContent = timestamp;
+                
+                // Parse YAML format - helm chart-releaser format
+                const lines = data.split('\n');
+                const charts = {};
+                let currentChart = null;
+                
+                for (let i = 0; i < lines.length; i++) {
+                  const line = lines[i];
+                  // Match chart name like "  testops-infra:" or "  ai-testops:"
+                  if (line.match(/^  [a-zA-Z0-9-]+:$/) && !line.includes('entries')) {
+                    currentChart = line.replace(':', '').trim();
+                    charts[currentChart] = [];
+                  } 
+                  // Match version line like "    version: 1.2.0"
+                  else if (currentChart && line.match(/^\s+version:\s/)) {
+                    const version = line.split(':')[1].trim().replace(/"/g, '');
+                    charts[currentChart].push(version);
+                  }
+                }
+                
+                // Generate HTML
+                const content = document.getElementById('content');
+                content.innerHTML = '';
+                
+                for (const [chart, versions] of Object.entries(charts)) {
+                  if (versions.length === 0) continue;
+                  
+                  const top10 = versions.slice(-10).reverse();
+                  const section = document.createElement('div');
+                  section.className = 'chart-section';
+                  
+                  let html = `<h2>${chart}</h2><div class="versions">`;
+                  top10.forEach((v, idx) => {
+                    const badgeClass = idx === 0 ? 'version-badge' : 'version-badge old';
+                    html += `<span class="${badgeClass}">${v}</span>`;
+                  });
+                  html += '</div>';
+                  
+                  section.innerHTML = html;
+                  content.appendChild(section);
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('content').innerHTML = '<p style="color: red;">❌ Error loading chart versions</p>';
+              });
+          </script>
+        </body>
+        </html>
+        EOF
+        
+        git add index.html
+        git commit -m "Update index.html (manual release - infra:$INFRA_VERSION, publisher:$PUBLISHER_VERSION, consumer:$CONSUMER_VERSION, postdeploy:$POSTDEPLOY_VERSION)" || echo "No changes"
+        git push origin gh-pages
+        
+        git checkout main
+    
+    - name: Summary
+      run: |
+        if [ "${{ inputs.bump_all_versions }}" == "true" ]; then
+          echo "✅ Bumped all chart versions:"
+          echo "  - testops-infra: ${{ steps.bump_versions.outputs.INFRA_VERSION }}"
+          echo "  - testops-publisher: ${{ steps.bump_versions.outputs.PUBLISHER_VERSION }}"
+          echo "  - testops-consumer: ${{ steps.bump_versions.outputs.CONSUMER_VERSION }}"
+          echo "  - testops-postdeploy: ${{ steps.bump_versions.outputs.POSTDEPLOY_VERSION }}"
+        else
+          echo "✅ Updated index.yaml without bumping versions"
+          echo "  Current versions:"
+          echo "  - testops-infra: ${{ steps.current_versions.outputs.INFRA_VERSION }}"
+          echo "  - testops-publisher: ${{ steps.current_versions.outputs.PUBLISHER_VERSION }}"
+          echo "  - testops-consumer: ${{ steps.current_versions.outputs.CONSUMER_VERSION }}"
+          echo "  - testops-postdeploy: ${{ steps.current_versions.outputs.POSTDEPLOY_VERSION }}"
+        fi
+        echo ""
+        echo "🌐 Check GitHub Pages: https://huynhduc0.github.io/ai-testops"
