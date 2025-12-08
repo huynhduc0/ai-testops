@@ -276,12 +276,21 @@ jobs:
         version: v3.13.0
     
     - name: Run chart-releaser to update index.yaml
-      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm_infra == 'true' || steps.changes.outputs.helm_publisher == 'true' || steps.changes.outputs.helm_consumer == 'true' || steps.changes.outputs.helm_postdeploy == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
       uses: helm/chart-releaser-action@v1.6.0
       with:
         charts_dir: helm
       env:
         CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    
+    - name: Verify chart-releaser output
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm_infra == 'true' || steps.changes.outputs.helm_publisher == 'true' || steps.changes.outputs.helm_consumer == 'true' || steps.changes.outputs.helm_postdeploy == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
+      run: |
+        echo "Checking chart-releaser output directory..."
+        ls -la .cr-release-packages/ 2>/dev/null || echo "No .cr-release-packages directory"
+        echo "Checking gh-pages branch for index.yaml..."
+        git fetch origin gh-pages
+        git show origin/gh-pages:index.yaml | head -20 || echo "index.yaml not found on gh-pages"
     
     - name: Update index.html on gh-pages to trigger ArgoCD
       if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm_infra == 'true' || steps.changes.outputs.helm_publisher == 'true' || steps.changes.outputs.helm_consumer == 'true' || steps.changes.outputs.helm_postdeploy == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
