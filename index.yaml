@@ -267,6 +267,19 @@ entries:
     version: 1.0.2
   testops-consumer:
   - apiVersion: v2
+    appVersion: 187316a
+    created: "2025-12-08T13:19:20.889883311Z"
+    description: Consumer service for TestOps platform
+    digest: 7d49fa5a6207e949be0bbf40e12b29ace6e430cc0fbb58cd8be6002b8f4e42e2
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-consumer
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-consumer-1.1.4/testops-consumer-1.1.4.tgz
+    version: 1.1.4
+  - apiVersion: v2
     appVersion: "96866e2"
     created: "2025-12-08T12:57:05.470429481Z"
     description: Consumer service for TestOps platform
@@ -1512,4 +1525,4 @@ entries:
     urls:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.1/testops-publisher-1.2.1.tgz
     version: 1.2.1
-generated: "2025-12-08T13:10:40.901982644Z"
+generated: "2025-12-08T13:19:20.890186998Z"
