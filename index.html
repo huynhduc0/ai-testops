@@ -1,13 +1,63 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>TestOps Helm Charts</title></head>
-<body><h1>TestOps Helm Repository</h1>
-<p>Repository: <code>https://huynhduc0.github.io/ai-testops</code></p>
-<p>Updated: 2025-12-08 11:41:16 UTC</p>
-<h2>Charts:</h2>
-<ul>
-  <li>testops-infra: 1.2.0</li>
-  <li>testops-publisher: 1.4.0</li>
-  <li>testops-consumer: 1.1.0</li>
-  <li>testops-postdeploy: 1.1.8</li>
-</ul>
-</body></html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>TestOps Helm Charts</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    code { background: #f4f4f4; padding: 2px 5px; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 5px 0; }
+  </style>
+</head>
+<body>
+  <h1>TestOps Helm Repository</h1>
+  <p>Repository: <code>https://huynhduc0.github.io/ai-testops</code></p>
+  <p>Updated: <span id="timestamp">-</span></p>
+  <h2>Charts:</h2>
+  <ul id="chart-list">
+    <li>Loading chart versions...</li>
+  </ul>
+  <script>
+    // Parse index.yaml and display chart versions
+    fetch('index.yaml')
+      .then(response => response.text())
+      .then(data => {
+        const timestamp = new Date().toUTCString();
+        document.getElementById('timestamp').textContent = timestamp;
+        
+        // Simple YAML parser for chart entries
+        const lines = data.split('\n');
+        const charts = {};
+        let currentChart = null;
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (line.startsWith('  - name: ')) {
+            currentChart = line.replace('  - name: ', '').trim();
+            charts[currentChart] = [];
+          } else if (currentChart && line.match(/^\s+- version:/)) {
+            const version = line.split(':')[1].trim().replace(/"/g, '');
+            if (!charts[currentChart].includes(version)) {
+              charts[currentChart].push(version);
+            }
+          }
+        }
+        
+        // Display latest version for each chart
+        const chartList = document.getElementById('chart-list');
+        chartList.innerHTML = '';
+        for (const [chart, versions] of Object.entries(charts)) {
+          if (versions.length > 0) {
+            const latestVersion = versions[versions.length - 1];
+            chartList.innerHTML += `<li>${chart}: <code>${latestVersion}</code></li>`;
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error loading index.yaml:', error);
+        document.getElementById('chart-list').innerHTML = '<li>Error loading chart versions</li>';
+      });
+  </script>
+</body>
+</html>
