@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ci-cd-pipeline
+  cancel-in-progress: false
 
 jobs:
   build-and-push:
