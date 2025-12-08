@@ -46,7 +46,7 @@
           if (line.match(/^  [a-zA-Z0-9-]+:$/) && !line.includes('entries')) {
             currentChart = line.replace(':', '').trim();
             charts[currentChart] = [];
-          }
+          } 
           // Match version line like "    version: 1.2.0"
           else if (currentChart && line.match(/^\s+version:\s/)) {
             const version = line.split(':')[1].trim().replace(/"/g, '');
@@ -54,7 +54,6 @@
           }
         }
 
-        // Helper to sort semver desc
         const compareSemverDesc = (a, b) => {
           const pa = a.split('.').map(Number);
           const pb = b.split('.').map(Number);
@@ -62,7 +61,7 @@
           for (let i = 0; i < len; i++) {
             const da = pa[i] || 0;
             const db = pb[i] || 0;
-            if (da !== db) return db - da; // desc
+            if (da !== db) return db - da;
           }
           return 0;
         };
@@ -70,23 +69,23 @@
         // Generate HTML
         const content = document.getElementById('content');
         content.innerHTML = '';
-
+        
         for (const [chart, versions] of Object.entries(charts)) {
           if (versions.length === 0) continue;
-
+          
           const uniq = Array.from(new Set(versions));
           const top10 = uniq.sort(compareSemverDesc).slice(0, 10);
-
+          
           const section = document.createElement('div');
           section.className = 'chart-section';
-
+          
           let html = `<h2>${chart}</h2><div class="versions">`;
           top10.forEach((v, idx) => {
             const badgeClass = idx === 0 ? 'version-badge' : 'version-badge old';
             html += `<span class="${badgeClass}">${v}</span>`;
           });
           html += '</div>';
-
+          
           section.innerHTML = html;
           content.appendChild(section);
         }
