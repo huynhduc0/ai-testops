@@ -267,6 +267,19 @@ entries:
     version: 1.0.2
   testops-consumer:
   - apiVersion: v2
+    appVersion: "96866e2"
+    created: "2025-12-08T12:09:08.310067879Z"
+    description: Consumer service for TestOps platform
+    digest: 6ab0ab2cf65a15456045f04014caee1498b3c60e79ce54127e8905d5976bfdcd
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-consumer
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-consumer-1.1.1/testops-consumer-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v2
     appVersion: 97df834
     created: "2025-12-08T09:46:50.779041118Z"
     description: Consumer service for TestOps platform
@@ -855,6 +868,30 @@ entries:
         kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml
       keda.sh/required: "true"
     apiVersion: v2
+    appVersion: "96866e2"
+    created: "2025-12-08T12:09:08.482332668Z"
+    description: Publisher service for TestOps platform
+    digest: c5116da599307133b7922ba2a133571e95885f1fc50b73c20c3f55c7e2eed00d
+    keywords:
+    - ai
+    - testing
+    - kafka
+    - microservices
+    - keda
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-publisher
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.4.3/testops-publisher-1.4.3.tgz
+    version: 1.4.3
+  - annotations:
+      keda.sh/installation: |
+        Install KEDA before deploying this chart:
+        kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml
+      keda.sh/required: "true"
+    apiVersion: v2
     appVersion: "8230e13"
     created: "2025-12-08T11:47:09.449882154Z"
     description: Publisher service for TestOps platform
@@ -1281,4 +1318,4 @@ entries:
     urls:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.1/testops-publisher-1.2.1.tgz
     version: 1.2.1
-generated: "2025-12-08T11:47:09.45016285Z"
+generated: "2025-12-08T12:09:08.482681518Z"
