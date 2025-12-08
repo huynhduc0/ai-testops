@@ -52,8 +52,14 @@ jobs:
             - 'manage.py'
           consumer:
             - 'test-execute-consumer/**'
-          helm:
-            - 'helm/**'
+          helm_infra:
+            - 'helm/testops-infra/**'
+          helm_publisher:
+            - 'helm/testops-publisher/**'
+          helm_consumer:
+            - 'helm/testops-consumer/**'
+          helm_postdeploy:
+            - 'helm/testops-postdeploy/**'
           argocd:
             - 'argocd/**'
 
@@ -78,8 +84,25 @@ jobs:
           BUMP_CONSUMER=true
         fi
         
-        # Bump infra and postdeploy if helm or argocd changes
-        if [ "${{ steps.changes.outputs.helm }}" == "true" ] || [ "${{ steps.changes.outputs.argocd }}" == "true" ]; then
+        # Bump specific charts if their helm templates change
+        if [ "${{ steps.changes.outputs.helm_infra }}" == "true" ]; then
+          BUMP_INFRA=true
+        fi
+        
+        if [ "${{ steps.changes.outputs.helm_publisher }}" == "true" ]; then
+          BUMP_PUBLISHER=true
+        fi
+        
+        if [ "${{ steps.changes.outputs.helm_consumer }}" == "true" ]; then
+          BUMP_CONSUMER=true
+        fi
+        
+        if [ "${{ steps.changes.outputs.helm_postdeploy }}" == "true" ]; then
+          BUMP_POSTDEPLOY=true
+        fi
+        
+        # Bump all charts if argocd configs change (affects all deployments)
+        if [ "${{ steps.changes.outputs.argocd }}" == "true" ]; then
           BUMP_INFRA=true
           BUMP_PUBLISHER=true
           BUMP_CONSUMER=true
