@@ -7,6 +7,7 @@ import json
 from prometheus_client import start_http_server, Counter
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
+PUBLISHER_URL = os.getenv('PUBLISHER_URL', 'http://localhost:8000')
 DEAD_LETTER_QUEUE = 'dead_letter_queue'
 
 # Prometheus metrics
@@ -77,7 +78,7 @@ def run_test_case(test_case_id, test_file_content):
         os.remove('temp_test_file.py')
 
 def save_test_result_to_db(test_case_id, status, log):
-    url = f"http://app:8000/api_test/api/save/{test_case_id}/"
+    url = f"{PUBLISHER_URL}/api_test/api/save/{test_case_id}/"
     data = {
         'status': status,
         'log': log

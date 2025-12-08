@@ -104,14 +104,14 @@ class TestWatch(unittest.TestCase):
         mock_post.return_value.status_code = 500
         with patch('watch.logging.error') as mock_log_error:
             watch.save_test_result_to_db(1, 'failed', 'test log')
-            mock_post.assert_called_once_with('http://app:8000/api_test/api/save/1/', json={'status': 'failed', 'log': 'test log'})
+            mock_post.assert_called_once_with('http://localhost:8000/api_test/api/save/1/', json={'status': 'failed', 'log': 'test log'})
             mock_log_error.assert_called()
 
     @patch('watch.requests.post', side_effect=requests.exceptions.RequestException)
     def test_save_test_result_to_db_exception(self, mock_post):
         with patch('watch.logging.error') as mock_log_error:
             watch.save_test_result_to_db(1, 'failed', 'test log')
-            mock_post.assert_called_once_with('http://app:8000/api_test/api/save/1/', json={'status': 'failed', 'log': 'test log'})
+            mock_post.assert_called_once_with('http://localhost:8000/api_test/api/save/1/', json={'status': 'failed', 'log': 'test log'})
             mock_log_error.assert_called()
 
     @patch('watch.subprocess.run', side_effect=FileNotFoundError('pytest not found'))

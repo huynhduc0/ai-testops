@@ -17,6 +17,9 @@ consumer:
   service:
     type: ClusterIP
     port: 8080
+  env:
+    PUBLISHER_URL: "http://testops-publisher:8000"
+    KAFKA_BOOTSTRAP_SERVERS: "kafka.testops.svc.cluster.local:9092"
   resources:
     requests:
       memory: "128Mi"
@@ -47,3 +50,4 @@ keda:
     consumerGroup: "test-consumer-group"
     topic: "test_run_queue"
     lagThreshold: "10"
+
