@@ -68,17 +68,21 @@ jobs:
         BUMP_CONSUMER=false
         BUMP_POSTDEPLOY=false
         
-        # Check if we need to bump any charts
-        if [ "${{ steps.changes.outputs.django }}" == "true" ] || [ "${{ steps.changes.outputs.helm }}" == "true" ]; then
+        # Bump publisher if Django code or Dockerfile changes
+        if [ "${{ steps.changes.outputs.django }}" == "true" ]; then
           BUMP_PUBLISHER=true
         fi
         
-        if [ "${{ steps.changes.outputs.consumer }}" == "true" ] || [ "${{ steps.changes.outputs.helm }}" == "true" ]; then
+        # Bump consumer if consumer code changes
+        if [ "${{ steps.changes.outputs.consumer }}" == "true" ]; then
           BUMP_CONSUMER=true
         fi
         
+        # Bump infra and postdeploy if helm or argocd changes
         if [ "${{ steps.changes.outputs.helm }}" == "true" ] || [ "${{ steps.changes.outputs.argocd }}" == "true" ]; then
           BUMP_INFRA=true
+          BUMP_PUBLISHER=true
+          BUMP_CONSUMER=true
           BUMP_POSTDEPLOY=true
         fi
         
