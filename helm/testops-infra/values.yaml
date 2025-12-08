@@ -81,8 +81,21 @@ global:
 
   # Monitoring
   monitoring:
+    prometheus:
+      enabled: true
+      image:
+        repository: prom/prometheus
+        tag: "v2.48.0"
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+          cpu: "200m"
     grafana:
-      prometheusUrl: ""
+      username: "2849703"
+      prometheusUrl: https://prometheus-prod-43-prod-ap-south-1.grafana.net/api/prom/push
 
   # Ingress (needed for configmap)
   ingress:
@@ -94,4 +107,7 @@ postgres:
   enabled: true
 
 kafka:
+  enabled: true
+
+prometheus:
   enabled: true

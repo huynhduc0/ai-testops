@@ -17,3 +17,6 @@ dependencies:
     condition: kafka.enabled
   - name: shared
     version: "1.0.0"
+  - name: prometheus
+    version: "1.0.0"
+    condition: prometheus.enabled

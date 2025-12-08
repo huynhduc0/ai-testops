@@ -1,0 +1,6 @@
+apiVersion: v2
+name: prometheus
+description: Prometheus agent for scraping and pushing metrics to Grafana Cloud
+type: application
+version: 1.0.0
+appVersion: "v2.48.0"
