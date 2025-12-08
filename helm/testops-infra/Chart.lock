@@ -8,5 +8,8 @@ dependencies:
 - name: shared
   repository: ""
   version: 1.0.0
-digest: sha256:1c9f53dc607a518881a98564f41498f0b26c5f1062133bc8034ae9f91cc48b71
-generated: "2025-12-07T19:22:52.468083+07:00"
+- name: prometheus
+  repository: ""
+  version: 1.0.0
+digest: sha256:e8c0c2f3a4b5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1
+generated: "2025-12-08T17:30:00.000000+07:00"
