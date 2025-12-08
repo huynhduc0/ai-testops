@@ -2,7 +2,7 @@ apiVersion: v2
 name: testops-infra
 description: Infrastructure components for TestOps platform (PostgreSQL, Kafka, shared resources)
 type: application
-version: 1.2.12
+version: 1.2.13
 appVersion: "1.0.0"
 maintainers:
   - name: Duc Truong
