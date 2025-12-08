@@ -268,6 +268,19 @@ entries:
   testops-consumer:
   - apiVersion: v2
     appVersion: 187316a
+    created: "2025-12-08T13:47:31.103253797Z"
+    description: Consumer service for TestOps platform
+    digest: bd413961293d96cde37e63bea92440cdbb11e4a5f804526e0b9997520d79c702
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-consumer
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-consumer-1.1.5/testops-consumer-1.1.5.tgz
+    version: 1.1.5
+  - apiVersion: v2
+    appVersion: 187316a
     created: "2025-12-08T13:19:20.889883311Z"
     description: Consumer service for TestOps platform
     digest: 7d49fa5a6207e949be0bbf40e12b29ace6e430cc0fbb58cd8be6002b8f4e42e2
@@ -488,6 +501,36 @@ entries:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-consumer-1.0.1/testops-consumer-1.0.1.tgz
     version: 1.0.1
   testops-infra:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-12-08T13:47:31.280910449Z"
+    dependencies:
+    - condition: postgres.enabled
+      name: postgres
+      repository: ""
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: ""
+      version: 1.0.0
+    - name: shared
+      repository: ""
+      version: 1.0.0
+    - condition: prometheus.enabled
+      name: prometheus
+      repository: ""
+      version: 1.0.0
+    description: Infrastructure components for TestOps platform (PostgreSQL, Kafka,
+      shared resources)
+    digest: f5ca49e4fe02add0a5f5802ee60d6cd495d6230d9e8021bf9b0b24cb2affbe0d
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-infra
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-infra-1.2.17/testops-infra-1.2.17.tgz
+    version: 1.2.17
   - apiVersion: v2
     appVersion: 1.0.0
     created: "2025-12-08T13:42:41.037672084Z"
@@ -995,6 +1038,19 @@ entries:
   testops-postdeploy:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2025-12-08T13:47:31.483191223Z"
+    description: Post-deployment resources for TestOps (NetworkPolicies, Monitoring)
+    digest: 70ec63cc6b4d7c9df22b89663f2c1bfed4ab10b50591562ac3ab9e8d26c49acc
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-postdeploy
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-postdeploy-1.1.11/testops-postdeploy-1.1.11.tgz
+    version: 1.1.11
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2025-12-08T12:57:05.89534302Z"
     description: Post-deployment resources for TestOps (NetworkPolicies, Monitoring)
     digest: 4600a4a191ee7766955e513ff867af5f2e61ebb93e69d2840aa433754cf99ea8
@@ -1111,6 +1167,30 @@ entries:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-postdeploy-1.0.1/testops-postdeploy-1.0.1.tgz
     version: 1.0.1
   testops-publisher:
+  - annotations:
+      keda.sh/installation: |
+        Install KEDA before deploying this chart:
+        kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml
+      keda.sh/required: "true"
+    apiVersion: v2
+    appVersion: 2afe793
+    created: "2025-12-08T13:47:31.696332433Z"
+    description: Publisher service for TestOps platform
+    digest: a7a615fcc3a56c492b865bf2bd710706e239fd0e3a9df83dd4f78dd5e7483709
+    keywords:
+    - ai
+    - testing
+    - kafka
+    - microservices
+    - keda
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-publisher
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.4.8/testops-publisher-1.4.8.tgz
+    version: 1.4.8
   - annotations:
       keda.sh/installation: |
         Install KEDA before deploying this chart:
@@ -1615,4 +1695,4 @@ entries:
     urls:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.1/testops-publisher-1.2.1.tgz
     version: 1.2.1
-generated: "2025-12-08T13:42:41.03793521Z"
+generated: "2025-12-08T13:47:31.696686217Z"
