@@ -275,6 +275,24 @@ jobs:
       with:
         version: v3.13.0
     
+    - name: Update Helm dependencies
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm_infra == 'true' || steps.changes.outputs.helm_publisher == 'true' || steps.changes.outputs.helm_consumer == 'true' || steps.changes.outputs.helm_postdeploy == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
+      run: |
+        echo "Updating Helm dependencies for charts with dependencies..."
+        
+        # Update testops-infra dependencies (has prometheus subchart)
+        if [ -f "helm/testops-infra/Chart.yaml" ]; then
+          echo "Updating testops-infra dependencies..."
+          helm dependency update helm/testops-infra
+        fi
+        
+        # Commit updated Chart.lock if changed
+        if ! git diff --quiet helm/*/Chart.lock; then
+          git add helm/*/Chart.lock
+          git commit -m "chore: update Chart.lock files [skip ci]" || echo "No Chart.lock changes to commit"
+          git push origin main
+        fi
+    
     - name: Run chart-releaser to update index.yaml
       if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm_infra == 'true' || steps.changes.outputs.helm_publisher == 'true' || steps.changes.outputs.helm_consumer == 'true' || steps.changes.outputs.helm_postdeploy == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
       uses: helm/chart-releaser-action@v1.6.0
