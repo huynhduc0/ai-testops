@@ -24,7 +24,7 @@ def parse_swagger_from_url(url):
 def get_base_url(swagger_url):
     parsed_url = urlparse(swagger_url)
     if not parsed_url.scheme or not parsed_url.netloc:
-        raise ValueError(f"Invalid URL {swagger_url}")
+        raise ValueError(f"Invalid URL: {swagger_url}")
 
     base_url = urljoin(f"{parsed_url.scheme}://{parsed_url.netloc}", parsed_url.path.rsplit('/', 1)[0] + '/')
     return base_url
