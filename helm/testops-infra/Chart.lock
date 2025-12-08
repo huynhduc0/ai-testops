@@ -11,5 +11,5 @@ dependencies:
 - name: prometheus
   repository: ""
   version: 1.0.0
-digest: sha256:e8c0c2f3a4b5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1
-generated: "2025-12-08T17:30:00.000000+07:00"
+digest: sha256:8f69c1e9bed1fd87c1da4297f678ffa7a22dc23c13ac67126bdef9b8a58ed61a
+generated: "2025-12-08T12:30:38.751581991Z"
