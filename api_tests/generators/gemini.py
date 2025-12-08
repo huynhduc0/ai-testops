@@ -10,7 +10,7 @@ class GeminiLLM(LLM):
 
     def generate_test_case(self, prompt: str) -> str:
         genai.configure(api_key=self.api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-flash-latest")
         try:
             response = model.generate_content(prompt)
         except google.api_core.exceptions.ResourceExhausted as e:
