@@ -29,11 +29,11 @@ global:
       password: canvas_password
     resources:
       requests:
-        memory: "128Mi"
-        cpu: "100m"
+        memory: "512Mi"
+        cpu: "500m"
       limits:
-        memory: "256Mi"
-        cpu: "200m"
+        memory: "1Gi"
+        cpu: "1000m"
 
   # Kafka
   kafka:

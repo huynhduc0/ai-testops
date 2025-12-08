@@ -76,16 +76,22 @@ spec:
             - pg_isready
             - -U
             - {{ .Values.global.postgres.credentials.username }}
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 5
+          successThreshold: 1
         readinessProbe:
           exec:
             command:
             - pg_isready
             - -U
             - {{ .Values.global.postgres.credentials.username }}
-          initialDelaySeconds: 5
+          initialDelaySeconds: 10
           periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
       {{- if .Values.global.postgres.persistence.enabled }}
       volumes:
       - name: postgres-storage
