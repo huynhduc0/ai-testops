@@ -47,7 +47,7 @@ keda:
   consumer:
     minReplicas: 1
     maxReplicas: 10
-    consumerGroup: "test-consumer-group"
+    consumerGroup: "test_group"
     topic: "test_run_queue"
     lagThreshold: "10"
 
