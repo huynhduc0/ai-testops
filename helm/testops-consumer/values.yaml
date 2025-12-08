@@ -49,5 +49,5 @@ keda:
     maxReplicas: 10
     consumerGroup: "test_group"
     topic: "test_run_queue"
-    lagThreshold: "10"
+    lagThreshold: "5"
 

@@ -9,6 +9,8 @@ metadata:
     {{- include "ai-testops.labels" . | nindent 4 }}
   annotations:
     argocd.argoproj.io/sync-wave: "6"
+    # Use server-side apply to avoid KEDA validation warnings
+    argocd.argoproj.io/compare-result: "ignore-excess"
 spec:
   scaleTargetRef:
     name: {{ .Values.consumer.name }}
@@ -24,4 +26,5 @@ spec:
       topic: {{ .Values.keda.consumer.topic }}
       lagThreshold: {{ .Values.keda.consumer.lagThreshold | quote }}
       offsetResetPolicy: latest
+      allowIdleConsumers: "true"
 {{- end }}
