@@ -35,27 +35,23 @@
         const timestamp = new Date().toLocaleString();
         document.getElementById('timestamp').textContent = timestamp;
         
-        // Parse YAML format
+        // Parse YAML format - helm chart-releaser format
         const lines = data.split('\n');
         const charts = {};
         let currentChart = null;
-        let versionList = [];
         
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
-          if (line.startsWith('  - name: ')) {
-            if (currentChart && versionList.length > 0) {
-              charts[currentChart] = versionList;
-            }
-            currentChart = line.replace('  - name: ', '').trim();
-            versionList = [];
-          } else if (currentChart && line.match(/^\s+- version:/)) {
+          // Match chart name like "  testops-infra:" or "  ai-testops:"
+          if (line.match(/^  [a-zA-Z0-9-]+:$/) && !line.includes('entries')) {
+            currentChart = line.replace(':', '').trim();
+            charts[currentChart] = [];
+          } 
+          // Match version line like "    version: 1.2.0"
+          else if (currentChart && line.match(/^\s+version:\s/)) {
             const version = line.split(':')[1].trim().replace(/"/g, '');
-            versionList.push(version);
+            charts[currentChart].push(version);
           }
-        }
-        if (currentChart && versionList.length > 0) {
-          charts[currentChart] = versionList;
         }
         
         // Generate HTML
@@ -63,6 +59,8 @@
         content.innerHTML = '';
         
         for (const [chart, versions] of Object.entries(charts)) {
+          if (versions.length === 0) continue;
+          
           const top10 = versions.slice(-10).reverse();
           const section = document.createElement('div');
           section.className = 'chart-section';
