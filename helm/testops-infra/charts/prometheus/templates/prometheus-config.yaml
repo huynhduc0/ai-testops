@@ -31,6 +31,69 @@ data:
           - targets: ['test-execute-consumer.{{ .Values.global.namespace }}.svc.cluster.local:8001']
         metrics_path: '/metrics'
 
+      # Scrape PostgreSQL metrics (postgres_exporter)
+      - job_name: 'postgresql'
+        static_configs:
+          - targets: ['{{ .Values.global.postgres.name }}.{{ .Values.global.namespace }}.svc.cluster.local:5432']
+        metrics_path: '/metrics'
+
+      # Scrape Kafka metrics (JMX exporter)
+      - job_name: 'kafka'
+        static_configs:
+          - targets: ['kafka.{{ .Values.global.namespace }}.svc.cluster.local:9092']
+        metrics_path: '/metrics'
+
+      # Kubernetes API server metrics
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+
+      # Kubernetes nodes metrics
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+
+      # Kubernetes pods metrics
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
     remote_write:
       - url: {{ .Values.global.monitoring.grafana.prometheusUrl }}
         basic_auth:
@@ -38,6 +101,6 @@ data:
           password_file: /etc/secrets/grafana-api-key
         write_relabel_configs:
           - source_labels: [__name__]
-            regex: '(test_cases_status|django_.*|http_.*)'
+            regex: '(test_cases_status|django_.*|http_.*|pg_.*|kafka_.*|node_.*|kube_.*)'
             action: keep
 {{- end }}

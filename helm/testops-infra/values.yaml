@@ -97,6 +97,10 @@ global:
       username: "2849703"
       prometheusUrl: https://prometheus-prod-43-prod-ap-south-1.grafana.net/api/prom/push
 
+  # Kafka UI for monitoring and management
+  kafkaUi:
+    enabled: true
+
   # Ingress (needed for configmap)
   ingress:
     hosts:
