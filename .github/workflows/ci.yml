@@ -361,39 +361,54 @@ jobs:
                 const lines = data.split('\n');
                 const charts = {};
                 let currentChart = null;
-                
+
                 for (let i = 0; i < lines.length; i++) {
                   const line = lines[i];
                   // Match chart name like "  testops-infra:" or "  ai-testops:"
                   if (line.match(/^  [a-zA-Z0-9-]+:$/) && !line.includes('entries')) {
                     currentChart = line.replace(':', '').trim();
                     charts[currentChart] = [];
-                  } 
+                  }
                   // Match version line like "    version: 1.2.0"
                   else if (currentChart && line.match(/^\s+version:\s/)) {
                     const version = line.split(':')[1].trim().replace(/"/g, '');
                     charts[currentChart].push(version);
                   }
                 }
-                
+
+                // Helper to sort semver desc
+                const compareSemverDesc = (a, b) => {
+                  const pa = a.split('.').map(Number);
+                  const pb = b.split('.').map(Number);
+                  const len = Math.max(pa.length, pb.length);
+                  for (let i = 0; i < len; i++) {
+                    const da = pa[i] || 0;
+                    const db = pb[i] || 0;
+                    if (da !== db) return db - da; // desc
+                  }
+                  return 0;
+                };
+
                 // Generate HTML
                 const content = document.getElementById('content');
                 content.innerHTML = '';
-                
+
                 for (const [chart, versions] of Object.entries(charts)) {
                   if (versions.length === 0) continue;
-                  
-                  const top10 = versions.slice(-10).reverse();
+
+                  const uniq = Array.from(new Set(versions));
+                  const top10 = uniq.sort(compareSemverDesc).slice(0, 10);
+
                   const section = document.createElement('div');
                   section.className = 'chart-section';
-                  
+
                   let html = `<h2>${chart}</h2><div class="versions">`;
                   top10.forEach((v, idx) => {
                     const badgeClass = idx === 0 ? 'version-badge' : 'version-badge old';
                     html += `<span class="${badgeClass}">${v}</span>`;
                   });
                   html += '</div>';
-                  
+
                   section.innerHTML = html;
                   content.appendChild(section);
                 }
