@@ -35,7 +35,7 @@ data:
       - url: {{ .Values.global.monitoring.grafana.prometheusUrl }}
         basic_auth:
           username: {{ .Values.global.monitoring.grafana.username | quote }}
-          password: ${GRAFANA_CLOUD_API_KEY}
+          password_file: /etc/secrets/grafana-api-key
         write_relabel_configs:
           - source_labels: [__name__]
             regex: '(test_cases_status|django_.*|http_.*)'
