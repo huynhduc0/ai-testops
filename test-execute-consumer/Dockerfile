@@ -12,7 +12,7 @@ WORKDIR /code
 COPY ../requirements.txt /code/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy watch.py from parent directory
+# Copy watch.py from parent
 COPY ../watch.py /code/
 
 # Run the watch.py script
