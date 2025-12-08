@@ -284,7 +284,7 @@ jobs:
         CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     
     - name: Update index.html on gh-pages to trigger ArgoCD
-      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
+      if: (steps.changes.outputs.django == 'true' || steps.changes.outputs.consumer == 'true' || steps.changes.outputs.helm_infra == 'true' || steps.changes.outputs.helm_publisher == 'true' || steps.changes.outputs.helm_consumer == 'true' || steps.changes.outputs.helm_postdeploy == 'true' || steps.changes.outputs.argocd == 'true') && github.ref == 'refs/heads/main'
       run: |
         git fetch origin gh-pages
         git checkout gh-pages
