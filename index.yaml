@@ -516,6 +516,36 @@ entries:
   testops-infra:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2025-12-08T18:10:27.620771946Z"
+    dependencies:
+    - condition: postgres.enabled
+      name: postgres
+      repository: ""
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: ""
+      version: 1.0.0
+    - name: shared
+      repository: ""
+      version: 1.0.0
+    - condition: prometheus.enabled
+      name: prometheus
+      repository: ""
+      version: 1.0.0
+    description: Infrastructure components for TestOps platform (PostgreSQL, Kafka,
+      shared resources)
+    digest: fe0eab07e5c955c3a05dc3b48926497293f4ffc5add456fbe31fc314a4f41b6c
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-infra
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-infra-1.2.18/testops-infra-1.2.18.tgz
+    version: 1.2.18
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2025-12-08T13:47:31.280910449Z"
     dependencies:
     - condition: postgres.enabled
@@ -1708,4 +1738,4 @@ entries:
     urls:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.1/testops-publisher-1.2.1.tgz
     version: 1.2.1
-generated: "2025-12-08T13:54:30.976972603Z"
+generated: "2025-12-08T18:10:27.62098787Z"
