@@ -34,14 +34,14 @@ coverage/
 .idea/
 *.swp
 
-# Ignore static files
-static/
+# Don't ignore static source files (needed for collectstatic)
+# static/
 
 # Ignore media files
 media/
 
-# Ignore Django static files
-staticfiles/
+# Don't ignore staticfiles (will be generated during build)
+# staticfiles/
 
 # Ignore other unnecessary files and directories
 .DS_Store
