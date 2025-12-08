@@ -308,59 +308,83 @@ jobs:
           <meta charset="UTF-8">
           <title>TestOps Helm Charts</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            code { background: #f4f4f4; padding: 2px 5px; }
-            ul { list-style: none; padding: 0; }
-            li { padding: 5px 0; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+            .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            h1 { color: #333; border-bottom: 3px solid #007bff; padding-bottom: 10px; }
+            h2 { color: #555; margin-top: 30px; margin-bottom: 15px; }
+            .repo-info { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 15px 0; }
+            code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; }
+            .chart-section { margin: 20px 0; }
+            .versions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+            .version-badge { display: inline-block; background: #007bff; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px; }
+            .version-badge.old { background: #6c757d; }
+            #loading { text-align: center; color: #666; }
           </style>
         </head>
         <body>
-          <h1>TestOps Helm Repository</h1>
-          <p>Repository: <code>https://huynhduc0.github.io/ai-testops</code></p>
-          <p>Updated: <span id="timestamp">-</span></p>
-          <h2>Charts:</h2>
-          <ul id="chart-list">
-            <li>Loading chart versions...</li>
-          </ul>
+          <div class="container">
+            <h1>📦 TestOps Helm Repository</h1>
+            <div class="repo-info">
+              <p><strong>Repository URL:</strong> <code>https://huynhduc0.github.io/ai-testops</code></p>
+              <p><strong>Last Updated:</strong> <span id="timestamp">-</span></p>
+            </div>
+            <div id="content">
+              <div id="loading">⏳ Loading chart versions...</div>
+            </div>
+          </div>
           <script>
-            // Parse index.yaml and display chart versions
             fetch('index.yaml')
               .then(response => response.text())
               .then(data => {
-                const timestamp = new Date().toUTCString();
+                const timestamp = new Date().toLocaleString();
                 document.getElementById('timestamp').textContent = timestamp;
                 
-                // Simple YAML parser for chart entries
+                // Parse YAML format
                 const lines = data.split('\n');
                 const charts = {};
                 let currentChart = null;
+                let versionList = [];
                 
                 for (let i = 0; i < lines.length; i++) {
                   const line = lines[i];
                   if (line.startsWith('  - name: ')) {
+                    if (currentChart && versionList.length > 0) {
+                      charts[currentChart] = versionList;
+                    }
                     currentChart = line.replace('  - name: ', '').trim();
-                    charts[currentChart] = [];
+                    versionList = [];
                   } else if (currentChart && line.match(/^\s+- version:/)) {
                     const version = line.split(':')[1].trim().replace(/"/g, '');
-                    if (!charts[currentChart].includes(version)) {
-                      charts[currentChart].push(version);
-                    }
+                    versionList.push(version);
                   }
                 }
+                if (currentChart && versionList.length > 0) {
+                  charts[currentChart] = versionList;
+                }
                 
-                // Display latest version for each chart
-                const chartList = document.getElementById('chart-list');
-                chartList.innerHTML = '';
+                // Generate HTML
+                const content = document.getElementById('content');
+                content.innerHTML = '';
+                
                 for (const [chart, versions] of Object.entries(charts)) {
-                  if (versions.length > 0) {
-                    const latestVersion = versions[versions.length - 1];
-                    chartList.innerHTML += `<li>${chart}: <code>${latestVersion}</code></li>`;
-                  }
+                  const top10 = versions.slice(-10).reverse();
+                  const section = document.createElement('div');
+                  section.className = 'chart-section';
+                  
+                  let html = `<h2>${chart}</h2><div class="versions">`;
+                  top10.forEach((v, idx) => {
+                    const badgeClass = idx === 0 ? 'version-badge' : 'version-badge old';
+                    html += `<span class="${badgeClass}">${v}</span>`;
+                  });
+                  html += '</div>';
+                  
+                  section.innerHTML = html;
+                  content.appendChild(section);
                 }
               })
               .catch(error => {
-                console.error('Error loading index.yaml:', error);
-                document.getElementById('chart-list').innerHTML = '<li>Error loading chart versions</li>';
+                console.error('Error:', error);
+                document.getElementById('content').innerHTML = '<p style="color: red;">❌ Error loading chart versions</p>';
               });
           </script>
         </body>
