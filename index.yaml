@@ -746,6 +746,19 @@ entries:
   testops-postdeploy:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2025-12-08T11:41:16.011990856Z"
+    description: Post-deployment resources for TestOps (NetworkPolicies, Monitoring)
+    digest: a1b55efc7983c0dc6ba05ef36b051a67cefef766fd0f7955fad76bc857a6c40d
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-postdeploy
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-postdeploy-1.1.8/testops-postdeploy-1.1.8.tgz
+    version: 1.1.8
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2025-12-08T09:46:51.215457853Z"
     description: Post-deployment resources for TestOps (NetworkPolicies, Monitoring)
     digest: 5d175158acfbda5241eccc62066ed41e434a2e0ceb8c35d1efa92f1be005c2de
@@ -1244,4 +1257,4 @@ entries:
     urls:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.1/testops-publisher-1.2.1.tgz
     version: 1.2.1
-generated: "2025-12-08T10:39:57.833343449Z"
+generated: "2025-12-08T11:41:16.012156455Z"
