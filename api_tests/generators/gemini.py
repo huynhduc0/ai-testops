@@ -14,7 +14,7 @@ class GeminiLLM(LLM):
         try:
             response = model.generate_content(prompt)
         except google.api_core.exceptions.ResourceExhausted as e:
-            raise RuntimeError("Resource has been exhausted (e.g. check quota).") from e
+            raise RuntimeError("Resource has been exhausted (e.g. check quota). <") from e
         
         # print(response)
         
