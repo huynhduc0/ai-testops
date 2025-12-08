@@ -855,6 +855,30 @@ entries:
         kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml
       keda.sh/required: "true"
     apiVersion: v2
+    appVersion: "8230e13"
+    created: "2025-12-08T11:47:09.449882154Z"
+    description: Publisher service for TestOps platform
+    digest: 3acf3cf871c133f2297b9a30ba51af14c220f2680278b3b01a888a3fc61edb57
+    keywords:
+    - ai
+    - testing
+    - kafka
+    - microservices
+    - keda
+    maintainers:
+    - email: thduc.dev@gmail.com
+      name: Duc Truong
+    name: testops-publisher
+    type: application
+    urls:
+    - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.4.2/testops-publisher-1.4.2.tgz
+    version: 1.4.2
+  - annotations:
+      keda.sh/installation: |
+        Install KEDA before deploying this chart:
+        kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml
+      keda.sh/required: "true"
+    apiVersion: v2
     appVersion: e996bf8
     created: "2025-12-08T10:39:57.833139126Z"
     description: Publisher service for TestOps platform
@@ -1257,4 +1281,4 @@ entries:
     urls:
     - https://github.com/huynhduc0/ai-testops/releases/download/testops-publisher-1.2.1/testops-publisher-1.2.1.tgz
     version: 1.2.1
-generated: "2025-12-08T11:41:16.012156455Z"
+generated: "2025-12-08T11:47:09.45016285Z"
